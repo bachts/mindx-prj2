@@ -39,7 +39,6 @@ def board_Display():
 
 setup_Board()
 board_Display()
-<<<<<<< HEAD
 
 imgx = 20
 imgy = 20
