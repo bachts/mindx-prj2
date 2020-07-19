@@ -36,41 +36,6 @@ chess_pos[1][1]["pos_x"] = 100;
 print(chess_pos)
 def board_Display():
     pass
-    # for i in range(8):
-	#     for j in range(8):
-	# 	    board_State[i][j].pack();
-# tic_tac_toe[0].append(Button(root, width=10, height=5, command=lambda : disableBtn(tic_tac_toe[0][0])))
-# tic_tac_toe[0].append(Button(root, width=10, height=5, command=lambda : disableBtn(tic_tac_toe[0][1])))
-# tic_tac_toe[0].append(Button(root, width=10, height=5, command=lambda : disableBtn(tic_tac_toe[0][2])))
-# tic_tac_toe[1].append(Button(root, width=10, height=5, command=lambda : disableBtn(tic_tac_toe[1][0])))
-# tic_tac_toe[1].append(Button(root, width=10, height=5, command=lambda : disableBtn(tic_tac_toe[1][1])))
-# tic_tac_toe[1].append(Button(root, width=10, height=5, command=lambda : disableBtn(tic_tac_toe[1][2])))
-# tic_tac_toe[2].append(Button(root, width=10, height=5, command=lambda : disableBtn(tic_tac_toe[2][0])))
-# tic_tac_toe[2].append(Button(root, width=10, height=5, command=lambda : disableBtn(tic_tac_toe[2][1])))
-# tic_tac_toe[2].append(Button(root, width=10, height=5, command=lambda : disableBtn(tic_tac_toe[2][2])))
-
-# class Game:
-
-#     def __init__(self):
-
-#         self.game_Board = {}
-#         self.place_Pieces()
-#         self.Moving()
-
-#     def setup_Board():
-
-#         for i in range(0, 8):
-#             board_State.append([])
-#             for j in range(0, 8):
-#                 board_State[i].append(Button(Game, width=10, height=5, command=lambda : nothing()))
-
-#     def place_Pieces(self):
-
-#         for i in range(0, 8):
-#                 self.game_Board[()]
-
-
-#     def board_Display(self):
 
 setup_Board()
 board_Display()
@@ -115,20 +80,4 @@ game_Board.bind("<Button-1>", coord_pickup)
 game_Board.bind("<B1-Motion>", move)
 game_Board.bind("<ButtonRelease-1>", coord_drop)
 
-# class PAWN:
-
-#     def __init__(self, x, y, number, color):
-
-#         self.x = x
-#         self.y = y
-#         self.number = number
-#         self.color = color
-#         self.first_move = false
-
-#     def showAvailable(self):
-
-#         if(
-
-=======
->>>>>>> e452c30dc907334d2b32f1dbaae388b02bc0a8d9
 root.mainloop()
