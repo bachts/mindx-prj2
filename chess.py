@@ -27,13 +27,11 @@ def setup_Board():
         game_Board.create_text(55+i*70, game_Height-10, text=width_symbol[i])
         for j in range(8):
             game_Board.create_rectangle(20+i*70, 20+j*70, 20+(i+1)*70, 20+(j+1)*70, fill=((i*8+j-i)%2==0) and board_Color[0] or board_Color[1], outline="")
-for i in range(8):
-    temp = [];
-    for j in range(8):
-        temp.append({"pos_x" : "", "pos_y" : "", "chess_piece" : ""});
-    chess_pos.append(temp);
-chess_pos[1][1]["pos_x"] = 100;
-print(chess_pos)
+    for i in range(8):
+        temp = [];
+        for j in range(8):
+            temp.append({"pos_x" : "", "pos_y" : "", "chess_piece" : ""});
+        chess_pos.append(temp);
 def board_Display():
     pass
 
