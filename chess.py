@@ -6,6 +6,7 @@ root.geometry("600x600")
 
 width_symbol = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 height_symbol = ['8', '7', '6', '5', '4', '3', '2', '1']
+chess_pos = []
 
 board_State = [(0, 0)]
 chess_Pieces_img = [0, 0, 0, 0, 0]
@@ -21,13 +22,18 @@ game_Board = Canvas(root, width=game_Width, height=game_Height, bg="#EBE8BE")
 game_Board.pack()
 
 def setup_Board():
-
     for i in range(8):
         game_Board.create_text(10, 55+i*70, text=height_symbol[i])
         game_Board.create_text(55+i*70, game_Height-10, text=width_symbol[i])
         for j in range(8):
             game_Board.create_rectangle(20+i*70, 20+j*70, 20+(i+1)*70, 20+(j+1)*70, fill=((i*8+j-i)%2==0) and board_Color[0] or board_Color[1], outline="")
-
+for i in range(8):
+    temp = [];
+    for j in range(8):
+        temp.append({"pos_x" : "", "pos_y" : "", "chess_piece" : ""});
+    chess_pos.append(temp);
+chess_pos[1][1]["pos_x"] = 100;
+print(chess_pos)
 def board_Display():
     pass
     # for i in range(8):
@@ -68,6 +74,7 @@ def board_Display():
 
 setup_Board()
 board_Display()
+<<<<<<< HEAD
 
 imgx = 20
 imgy = 20
@@ -122,4 +129,6 @@ game_Board.bind("<ButtonRelease-1>", coord_drop)
 
 #         if(
 
+=======
+>>>>>>> e452c30dc907334d2b32f1dbaae388b02bc0a8d9
 root.mainloop()
