@@ -21,10 +21,94 @@ game_Width = 600
 game_Height = 600
 
 player_Turn = WHITE
+available_Move = []
 
 game_Board = Canvas(root, width=game_Width, height=game_Height, bg="#EBE8BE")
 game_Board.pack()
 
+def move_set(y,x):
+    if board_State[y][x]["chess_piece"] == "pawn":
+
+        if board_State[y][x]["color"] == "black":
+            if board_State[y+1][x]["chess_piece"] == "":
+                available_Move.append([y+1, x])
+                if y == 1 and board_State[y][x]["chess_piece"] == "":
+                    available_Move.append([y+2, x])
+            if x<7 and board_State[y+1][x+1]["chess_piece"]!="" and board_State[y+1][x+1]["color"] == "white":
+                available_Move.append([y+1, x+1])
+            if x>0 and board_State[y+1][x-1]["chess_piece"]!="" and board_State[y+1][x-1]["color"] == "white": 
+                available_Move.append([y+1, x-1])
+            if y == 7:
+                board_State[y][x]["chess_piece"] = "queen"
+
+        if board_State[y][x]["color"] == "white":
+            if board_State[y-1][x]["chess_piece"] == "":
+                available_Move.append([y-1, x])
+                if y == 6 and board_State[y][x]["chess_piece"] == "":
+                    available_Move.append([y-2, x])
+            if x<7 and board_State[y-1][x+1]["chess_piece"]!="" and board_State[y-1][x+1]["color"] == "black":
+                available_Move.append([y-1, x+1])
+            if x>0 and board_State[y-1][x-1]["chess_piece"]!="" and board_State[y-1][x-1]["color"] == "black": 
+                available_Move.append([y-1, x-1])
+            if y == 0:
+                board_State[y][x]["chess_piece"] = "queen"
+
+    if board_State[y][x]["chess_piece"] == "rook":
+
+        for i in range(y+1,8):
+            if board_State[i][x]["chess_piece"] == "":
+                available_Move.append([i,x])
+            elif board_State[i][x]["color"] != board_State[y][x]["color"]:
+                available_Move.append([i,x])
+                break
+            else:
+                break
+
+        for i in range(y-1, -1, -1):
+            if board_State[i][x]["chess_piece"] == "":
+                available_Move.append([i,x])
+            elif board_State[i][x]["color"] != board_State[y][x]["color"]:
+                available_Move.append([i,x])
+                break
+            else:
+                break
+
+        for j in range(x+1,8):
+            if board_State[y][j]["chess_piece"] == "":
+                available_Move.append([y,j])
+            elif board_State[y][j]["color"] != board_State[y][j]["color"]:
+                available_Move.append([y,j])
+                break
+            else:
+                break
+
+        for j in range(x-1, -1, -1):    
+            if board_State[y][j]["chess_piece"] == "":
+                available_Move.append([y,j])
+            elif board_State[y][j]["color"] != board_State[y][j]["color"]:
+                available_Move.append([y,j])
+                break
+            else:
+                break
+
+    if board_State[y][x]["chess_piece"] == "knight":
+        
+        for i in range(8):
+            moveY = ((int(i/4)>0) and ((i%4>1) and 2 or -2) or ((i%2) and 1 or -1))
+            moveX = ((int(i/4)==0) and ((i%4>1) and 2 or -2) or ((i%2) and 1 or -1))
+            if y+moveY>-1 and y+moveY<7 and x+moveX>-1 and x+moveX<7:
+                if board_State[y+moveY][x+moveX]["chess_piece"]=="" or board_State[y+moveY][x+moveX]["color"]!=board_State[y][x]["color"]:
+                    available_Move.append([y+moveY, x+moveX])
+    
+    if board_State[y][x]["chess_piece"] == "bishop":
+
+        for
+    
+
+
+
+                
+  
 def setup_chess_Pieces():
 
     for i in range(8):
