@@ -102,10 +102,47 @@ def move_set(y,x):
     
     if board_State[y][x]["chess_piece"] == "bishop":
 
-        for
-    
+        for i in range(y+1,8):
+            for j in range(x+1,8):
+                if board_State[i+1][j+1]["chess_piece"] == "":
+                    available_Move.append([i+1,j+1])
+                elif board_State[i][j]["color"] != board_State[y][x]["color"]:
+                    available_Move.append([i,j])
+                    break
+                else:
+                    break
 
+        for i in range(y-1, -1, -1):
+            for j in range(x-1, -1, -1):
+                if board_State[i-1][j-1]["chess_piece"] == "":
+                    available_Move.append([i-1,j-1])
+                elif board_State[i][j]["color"] != board_State[y][x]["color"]:
+                    available_Move.append([i,j])
+                    break
+                else:
+                    break
 
+        for i in range(x+1,8):
+            for j in range(y-1, -1, -1):
+                if board_State[j-1][i+1]["chess_piece"] == "":
+                    available_Move.append([j-1,i+1])
+                elif board_State[j][i]["color"] != board_State[y][x]["color"]:
+                    available_Move.append([j,i])
+                    break
+                else:
+                    break
+
+        for i in range(x-1, -1, -1):    
+            for j in range(y+1,8):
+                if board_State[j+1][i-1]["chess_piece"] == "":
+                    available_Move.append([j+1,i-1])
+                elif board_State[j][i]["color"] != board_State[y][x]["color"]:
+                    available_Move.append([j,i])
+                    break
+                else:
+                    break
+
+   
 
                 
   
