@@ -22,17 +22,20 @@ game_Height = 600
 
 player_Turn = WHITE
 available_Move = []
+available_Show = []
 
 game_Board = Canvas(root, width=game_Width, height=game_Height, bg="#EBE8BE")
 game_Board.pack()
 
-def move_set(y,x):
+def move_Set(y,x):
+
+    global available_Move, board_State
     if board_State[y][x]["chess_piece"] == "pawn":
 
         if board_State[y][x]["color"] == "black":
-            if board_State[y+1][x]["chess_piece"] == "":
+            if yboard_State[y+1][x]["chess_piece"] == "":
                 available_Move.append([y+1, x])
-                if y == 1 and board_State[y][x]["chess_piece"] == "":
+                if y == 1 and board_State[y+2][x]["chess_piece"] == "":
                     available_Move.append([y+2, x])
             if x<7 and board_State[y+1][x+1]["chess_piece"]!="" and board_State[y+1][x+1]["color"] == "white":
                 available_Move.append([y+1, x+1])
@@ -53,7 +56,7 @@ def move_set(y,x):
             if y == 0:
                 board_State[y][x]["chess_piece"] = "queen"
 
-    if board_State[y][x]["chess_piece"] == "rook":
+    elif board_State[y][x]["chess_piece"] == "rook":
 
         for i in range(y+1,8):
             if board_State[i][x]["chess_piece"] == "":
@@ -91,7 +94,7 @@ def move_set(y,x):
             else:
                 break
 
-    if board_State[y][x]["chess_piece"] == "knight":
+    elif board_State[y][x]["chess_piece"] == "knight":
         
         for i in range(8):
             moveY = ((int(i/4)>0) and ((i%4>1) and 2 or -2) or ((i%2) and 1 or -1))
@@ -100,52 +103,61 @@ def move_set(y,x):
                 if board_State[y+moveY][x+moveX]["chess_piece"]=="" or board_State[y+moveY][x+moveX]["color"]!=board_State[y][x]["color"]:
                     available_Move.append([y+moveY, x+moveX])
     
-    if board_State[y][x]["chess_piece"] == "bishop":
+    elif board_State[y][x]["chess_piece"] == "bishop":
 
-        for i in range(y+1,8):
-            for j in range(x+1,8):
-                if board_State[i+1][j+1]["chess_piece"] == "":
-                    available_Move.append([i+1,j+1])
-                elif board_State[i][j]["color"] != board_State[y][x]["color"]:
-                    available_Move.append([i,j])
-                    break
-                else:
-                    break
+        newY = y
+        newX = x
+        while newX-1>-1 and newY-1>-1 and board_State[newY-1][newX-1]["chess_piece"] == "":
+            available_Move.append([newY-1, newX-1])
+            newY -= 1
+            newX -= 1
+        if newX-1>-1 and newY-1>-1 and board_State[newY-1][newX-1]["color"] != board_State[y][x]["color"]:
+            available_Move.append([newY-1, newX-1])
 
-        for i in range(y-1, -1, -1):
-            for j in range(x-1, -1, -1):
-                if board_State[i-1][j-1]["chess_piece"] == "":
-                    available_Move.append([i-1,j-1])
-                elif board_State[i][j]["color"] != board_State[y][x]["color"]:
-                    available_Move.append([i,j])
-                    break
-                else:
-                    break
+        newY = y
+        newX = x
+        while newX-1>-1 and newY+1<8 and board_State[newY+1][newX-1]["chess_piece"] == "":
+            available_Move.append([newY+1, newX-1])
+            newY += 1
+            newX -= 1
+        if newX-1>-1 and newY+1<8 and board_State[newY+1][newX-1]["color"] != board_State[y][x]["color"]:
+            available_Move.append([newY+1, newX-1])
 
-        for i in range(x+1,8):
-            for j in range(y-1, -1, -1):
-                if board_State[j-1][i+1]["chess_piece"] == "":
-                    available_Move.append([j-1,i+1])
-                elif board_State[j][i]["color"] != board_State[y][x]["color"]:
-                    available_Move.append([j,i])
-                    break
-                else:
-                    break
+        newY = y
+        newX = x
+        while newX+1<8 and newY-1>-1 and board_State[newY-1][newX+1]["chess_piece"] == "":
+            available_Move.append([newY-1, newX+1])
+            newY -= 1
+            newX += 1
+        if newX+1<8 and newY-1>-1 and board_State[newY-1][newX+1]["color"] != board_State[y][x]["color"]:
+            available_Move.append([newY-1, newX+1])
 
-        for i in range(x-1, -1, -1):    
-            for j in range(y+1,8):
-                if board_State[j+1][i-1]["chess_piece"] == "":
-                    available_Move.append([j+1,i-1])
-                elif board_State[j][i]["color"] != board_State[y][x]["color"]:
-                    available_Move.append([j,i])
-                    break
-                else:
-                    break
+        newY = y
+        newX = x
+        while newX+1<8 and newY+1<8 and board_State[newY+1][newX+1]["chess_piece"] == "":
+            available_Move.append([newY+1, newX+1])
+            newY += 1
+            newX += 1
+        if newX+1<8 and newY+1<8 and board_State[newY+1][newX+1]["color"] != board_State[y][x]["color"]:
+            available_Move.append([newY+1, newX+1])
 
-   
+def display_Move():
 
-                
-  
+    global available_Move, available_Show
+    for i in range(len(available_Move)):
+        avail_X = available_Move[i][1]
+        avail_Y = available_Move[i][0]
+        available_Show.append(game_Board.create_oval(20+avail_X*70, 20+avail_Y*70, 20+(avail_X+1)*70, 20+(avail_Y+1)*70, fill=WHITE))
+
+def del_Move():
+
+    global available_Move, available_Show
+    for i in range(len(available_Move)):
+        game_Board.delete(available_Show[i])
+    available_Move = []
+    available_Show = []
+
+
 def setup_chess_Pieces():
 
     for i in range(8):
@@ -199,7 +211,9 @@ def coord_pickup(e):
     global chess_Pieces_img, player_Turn, board_State, pickup, col, row
     row = int((e.x-20)/70)
     col = int((e.y-20)/70)
-    if not board_State[col][row]["chess_piece"]=="":
+    if row>-1 and row<8 and col>-1 and col<8 and not board_State[col][row]["chess_piece"]=="":
+        move_Set(col, row)
+        display_Move()
         game_Board.delete(board_State[col][row]["image"])
         img = chess_Pieces_img[chess_Collab[board_State[col][row]["color"]]][chess_Collab[board_State[col][row]["chess_piece"]]]
         board_State[col][row]["image"] = game_Board.create_image(e.x, e.y, image=img)
@@ -233,6 +247,7 @@ def coord_drop(e):
         game_Board.coords(board_State[new_imgy][new_imgx]["image"], new_imgx*70+20, new_imgy*70+20)
         game_Board.itemconfig(board_State[new_imgy][new_imgx]["image"], anchor=NW)
         pickup = False
+        del_Move()
 
 
 game_Board.bind("<Button-1>", coord_pickup)
