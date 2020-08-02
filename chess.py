@@ -32,8 +32,6 @@ scroll_Bar.pack(side=RIGHT, fill=Y)
 
 move_List = Listbox(root, width=200, yscrollcommand = scroll_Bar.set)
 move_List.pack(side=LEFT)
-for i in range(20):
-    move_List.insert(END, str(i))
 scroll_Bar.config(command=move_List.yview)
 
 def next_Move():
@@ -140,6 +138,9 @@ def move_Set(y,x):
             if x+moveX>-1 and x+moveX<8 and y+moveY>-1 and y+moveY<8 and (board_State[y+moveY][x+moveX]["chess_piece"] == "" or board_State[y+moveY][x+moveX]["color"] != board_State[y][x]["color"]):
                 available_Move.append([y+moveY, x+moveX])
 
+def can_see_King():
+
+    global available_Move, board_State, 
 
 def display_Move():
 
@@ -147,7 +148,7 @@ def display_Move():
     for i in range(len(available_Move)):
         avail_X = available_Move[i][1]
         avail_Y = available_Move[i][0]
-        available_Show.append(game_Board.create_oval(45+avail_X*70, 45+avail_Y*70, 65+avail_X*70, 65+avail_Y*70, fill="#A9A9A9"))
+        available_Show.append(game_Board.create_oval(45+avail_X*70, 45+avail_Y*70, 65+avail_X*70, 65+avail_Y*70, fill="#A9A9A9", outline=""))
 
 def del_Move():
 
@@ -162,7 +163,7 @@ def setup_chess_Pieces():
     for i in range(8):
         temp = [];
         for j in range(8):
-            temp.append({"chess_piece": "", "color": "", "image": ""});
+            temp.append({"chess_piece": "", "color": "", "image": "", "valid_Move"});
         board_State.append(temp);
 
     for i in range(8):
