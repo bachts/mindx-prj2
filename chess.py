@@ -1,5 +1,11 @@
 from tkinter import *
 
+white_check = False;
+black_check = False;
+king_Picked = False
+
+pos_kings = {"white": (7,4), "black": (0,4)}
+
 root = Tk()
 root.title("Chess")
 root.geometry("800x600")
@@ -138,9 +144,9 @@ def move_Set(y,x):
             if x+moveX>-1 and x+moveX<8 and y+moveY>-1 and y+moveY<8 and (board_State[y+moveY][x+moveX]["chess_piece"] == "" or board_State[y+moveY][x+moveX]["color"] != board_State[y][x]["color"]):
                 available_Move.append([y+moveY, x+moveX])
 
-def can_see_King():
+def check_King():
 
-    global available_Move, board_State, 
+    global available_Move, board_State
 
 def display_Move():
 
@@ -159,11 +165,10 @@ def del_Move():
     available_Show = []
 
 def setup_chess_Pieces():
-
     for i in range(8):
         temp = [];
         for j in range(8):
-            temp.append({"chess_piece": "", "color": "", "image": "", "valid_Move"});
+            temp.append({"chess_piece": "", "color": "", "image": ""});
         board_State.append(temp);
 
     for i in range(8):
@@ -180,6 +185,46 @@ def setup_chess_Pieces():
     for i in range(2):
         for j in range(6):
             chess_Pieces_img[i][j] = PhotoImage(file="./chess_pic/"+color[i]+"_"+ascending[j]+".png")
+
+def commit_Suicide():
+
+    global available_Move, player_Turn, col, row
+
+    if col == pos_kings[player_Turn][0]:
+        if row < pos_kings[player_Turn][1]:
+            for i in range(row-1,-1,-1):
+                if board_State[col][i]["colour"] != player_Turn and board_State[col][i]["chess_piece"] == ("queen" or "rook"):
+                    for move in available_Move:
+                         if move[0] != col:
+                            available_Move.splice(move, 1);
+                    break;
+        elif row > pos_kings[player_Turn][1]:
+            for i in range(row+1,8):
+                if board_State[col][i]["colour"] != player_Turn and board_State[col][i]["chess_piece"] == ("queen" or "rook"):
+                    for move in available_Move:
+                         if move[0] != col:
+                            available_Move.splice(move, 1);
+                    break;
+    if row == pos_kings[player_Turn][1]:
+        if col < pos_kings[player_Turn][0]:
+            for i in range(col-1,-1,-1):
+                if board_State[i][row]["colour"] != player_Turn and board_State[i][row]["chess_piece"] == ("queen" or "rook"):
+                    for move in available_Move:
+                         if move[1] != row:
+                            available_Move.splice(move, 1);
+                    break;
+        elif col > pos_kings[player_Turn][0]:
+            for i in range(col+1,8):
+                if board_State[i][row]["colour"] != player_Turn and board_State[i][row]["chess_piece"] == ("queen" or "rook"):
+                    for move in available_Move:
+                         if move[1] != row:
+                            available_Move.splice(move, 1);
+                    break;
+
+    if Math.abs(col-pos_kings[player_Turn][0]) == Math.abs(row-pos_kings[player_Turn][1]):
+    
+        
+
 
 def board_Display():
 
@@ -203,16 +248,19 @@ col, row = (0, 0)
 
 def coord_pickup(e):
 
-    global chess_Pieces_img, player_Turn, board_State, pickup, col, row
+    global chess_Pieces_img, player_Turn, board_State, pickup, col, row, king_Picked
     row, col = (int((e.x-20)/70), int((e.y-20)/70))
     if row>=0 and row<8 and col>=0 and col<8:
         if board_State[col][row]["chess_piece"]!="" and board_State[col][row]["color"]==player_Turn:
             move_Set(col, row)
+            commit_Suicide()
             display_Move()
             game_Board.delete(board_State[col][row]["image"])
             img = chess_Pieces_img[chess_Collab[board_State[col][row]["color"]]][chess_Collab[board_State[col][row]["chess_piece"]]]
             board_State[col][row]["image"] = game_Board.create_image(e.x, e.y, image=img)
             pickup = True
+            if board_State[col][row]["chess_piece"] == "king":
+                king_Picked = True
 
 def move(e):
     
@@ -222,7 +270,7 @@ def move(e):
 
 def coord_drop(e):
 
-    global chess_Pieces_img, player_Turn, board_State, available_Move, pickup, col, row
+    global chess_Pieces_img, player_Turn, board_State, available_Move, pickup, col, row, king_Picked
     if pickup:
         new_imgx = int((e.x-20)/70)
         new_imgy = int((e.y-20)/70)
@@ -235,6 +283,10 @@ def coord_drop(e):
             board_State[col][row]["chess_piece"] = ""
             board_State[new_imgy][new_imgx]["image"] = board_State[col][row]["image"]
             board_State[col][row]["image"] = ""
+            if king_Picked:
+                pos_kings[board_State[new_imgy][new_imgx]["color"]] = (new_imgy, new_imgx)
+                king_Picked = False;
+                print(pos_kings);
             next_Move()
         else:
             new_imgx = row
