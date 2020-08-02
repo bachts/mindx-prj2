@@ -193,36 +193,38 @@ def commit_Suicide():
     if col == pos_kings[player_Turn][0]:
         if row < pos_kings[player_Turn][1]:
             for i in range(row-1,-1,-1):
-                if board_State[col][i]["colour"] != player_Turn and board_State[col][i]["chess_piece"] == ("queen" or "rook"):
+                if board_State[col][i]["color"] != player_Turn and board_State[col][i]["chess_piece"] == ("queen" or "rook"):
                     for move in available_Move:
-                         if move[0] != col:
+                        if move[0] != col:
                             available_Move.splice(move, 1);
                     break;
         elif row > pos_kings[player_Turn][1]:
             for i in range(row+1,8):
-                if board_State[col][i]["colour"] != player_Turn and board_State[col][i]["chess_piece"] == ("queen" or "rook"):
+                if board_State[col][i]["color"] != player_Turn and board_State[col][i]["chess_piece"] == ("queen" or "rook"):
                     for move in available_Move:
-                         if move[0] != col:
+                        if move[0] != col:
                             available_Move.splice(move, 1);
                     break;
-    if row == pos_kings[player_Turn][1]:
+    elif row == pos_kings[player_Turn][1]:
         if col < pos_kings[player_Turn][0]:
             for i in range(col-1,-1,-1):
-                if board_State[i][row]["colour"] != player_Turn and board_State[i][row]["chess_piece"] == ("queen" or "rook"):
+                if board_State[i][row]["color"] != player_Turn and board_State[i][row]["chess_piece"] == ("queen" or "rook"):
                     for move in available_Move:
-                         if move[1] != row:
+                        if move[1] != row:
                             available_Move.splice(move, 1);
                     break;
         elif col > pos_kings[player_Turn][0]:
             for i in range(col+1,8):
-                if board_State[i][row]["colour"] != player_Turn and board_State[i][row]["chess_piece"] == ("queen" or "rook"):
+                if board_State[i][row]["color"] != player_Turn and board_State[i][row]["chess_piece"] == ("queen" or "rook"):
                     for move in available_Move:
-                         if move[1] != row:
+                        if move[1] != row:
                             available_Move.splice(move, 1);
                     break;
 
-    if Math.abs(col-pos_kings[player_Turn][0]) == Math.abs(row-pos_kings[player_Turn][1]):
-    
+    # elif Math.abs(col-pos_kings[player_Turn][0]) == Math.abs(row-pos_kings[player_Turn][1]):
+    #     if col-pos_kings[player_Turn][0] < 0:
+    #         if row-pos_kings[player_Turn][1] < 0:
+
         
 
 
