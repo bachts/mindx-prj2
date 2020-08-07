@@ -1,14 +1,13 @@
 from tkinter import *
 
-white_check = False;
-black_check = False;
-king_Picked = False
-
-pos_kings = {"white": (7,4), "black": (0,4)}
-
 root = Tk()
 root.title("Chess")
 root.geometry("800x600")
+
+check_Mate = False
+king_Picked = False
+
+pos_kings = {"white": (7,4), "black": (0,4)}
 
 width_symbol = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 height_symbol = ['8', '7', '6', '5', '4', '3', '2', '1']
@@ -42,11 +41,79 @@ scroll_Bar.config(command=move_List.yview)
 
 def next_Move():
 
-    global player_Turn
+    global available_Move, board_State, player_Turn, check_Mate
+
     if player_Turn == WHITE:
         player_Turn = BLACK
     else:
         player_Turn = WHITE
+
+    y = pos_kings[player_Turn][0]
+    x = pos_kings[player_Turn][1]
+
+    for i in range(y+1, 8):
+        if board_State[i][x]["chess_piece"] != "":
+            if board_State[i][x]["color"] != player_Turn and board_State[i][x]["chess_piece"] == ("queen" or "rook"):
+                check_Mate = True
+                print("hello9")
+            break
+
+    for i in range(y-1, -1, -1):
+        if board_State[i][x]["chess_piece"] != "":
+            if board_State[i][x]["color"] != player_Turn and board_State[i][x]["chess_piece"] == ("queen" or "rook"):
+                check_Mate = True
+                print("hello10")
+            break
+
+    for i in range(x+1, 8):
+        if board_State[y][i]["chess_piece"] != "":
+            if board_State[y][i]["color"] != player_Turn and board_State[y][i]["chess_piece"] == ("queen" or "rook"):
+                check_Mate = True
+                print("hello11")
+            break
+    
+    for i in range(x-1, -1, -1):
+        if board_State[y][i]["chess_piece"] != "":
+            if board_State[y][i]["color"] != player_Turn and board_State[y][i]["chess_piece"] == ("queen" or "rook"):
+                check_Mate = True
+                print("hello12")
+            break
+
+    for i in range(1, min(8-x, y+1)):
+        if board_State[y-i][x+i]["chess_piece"] != "":
+            if board_State[y-i][x+i]["color"] != player_Turn and board_State[y-i][x+i]["chess_piece"] == ("queen" or "bishop"):
+                check_Mate = True
+                print("hello13")
+            break
+
+    for i in range(1, min(x+1, 8-y)):
+        if board_State[y+i][x-i]["chess_piece"] != "":
+            if board_State[y+i][x-i]["color"] != player_Turn and board_State[y+i][x-i]["chess_piece"] == ("queen" or "bishop"):
+                check_Mate = True
+                print("hello14")
+            break
+
+    for i in range(1, min(x+1, y+1)):
+        if board_State[y-i][x-i]["chess_piece"] != "":
+            if board_State[y-i][x-i]["color"] != player_Turn and board_State[y-i][x-i]["chess_piece"] == ("queen" or "bishop"):
+                check_Mate = True
+                print("hello15")
+            break
+
+    for i in range(1, min(8-x, 8-y)):
+        if board_State[y+i][x+i]["chess_piece"] != "":
+            if board_State[y+i][x+i]["color"] != player_Turn and board_State[y+i][x+i]["chess_piece"] == ("queen" or "bishop"):
+                check_Mate = True
+                print("hello16")
+            break
+
+    for i in range(8):
+        coordY = ((int(i/4)>0) and ((i%4>1) and 2 or -2) or ((i%2) and 1 or -1))
+        coordX = ((int(i/4)==0) and ((i%4>1) and 2 or -2) or ((i%2) and 1 or -1))
+        if y+coordY>-1 and y+coordY<8 and x+coordX>-1 and x+coordX<8:
+            if board_State[y+coordY][x+coordX]["chess_piece"] == "knight" and board_State[y+coordY][x+coordX]["color"]!=board_State[y][x]["color"]:
+                check_Mate = True
+                print("hello"+str(i))
 
 def move_Set(y,x):
 
@@ -144,10 +211,6 @@ def move_Set(y,x):
             if x+moveX>-1 and x+moveX<8 and y+moveY>-1 and y+moveY<8 and (board_State[y+moveY][x+moveX]["chess_piece"] == "" or board_State[y+moveY][x+moveX]["color"] != board_State[y][x]["color"]):
                 available_Move.append([y+moveY, x+moveX])
 
-def check_King():
-
-    global available_Move, board_State
-
 def display_Move():
 
     global available_Move, available_Show
@@ -165,6 +228,7 @@ def del_Move():
     available_Show = []
 
 def setup_chess_Pieces():
+
     for i in range(8):
         temp = [];
         for j in range(8):
@@ -186,46 +250,143 @@ def setup_chess_Pieces():
         for j in range(6):
             chess_Pieces_img[i][j] = PhotoImage(file="./chess_pic/"+color[i]+"_"+ascending[j]+".png")
 
-def commit_Suicide():
+def commit_Suicide(row, col):
 
-    global available_Move, player_Turn, col, row
+    global available_Move, player_Turn, pos_kings
 
-    if col == pos_kings[player_Turn][0]:
-        if row < pos_kings[player_Turn][1]:
-            for i in range(row-1,-1,-1):
-                if board_State[col][i]["color"] != player_Turn and board_State[col][i]["chess_piece"] == ("queen" or "rook"):
-                    for move in available_Move:
-                        if move[0] != col:
-                            available_Move.splice(move, 1);
-                    break;
-        elif row > pos_kings[player_Turn][1]:
-            for i in range(row+1,8):
-                if board_State[col][i]["color"] != player_Turn and board_State[col][i]["chess_piece"] == ("queen" or "rook"):
-                    for move in available_Move:
-                        if move[0] != col:
-                            available_Move.splice(move, 1);
-                    break;
-    elif row == pos_kings[player_Turn][1]:
-        if col < pos_kings[player_Turn][0]:
-            for i in range(col-1,-1,-1):
-                if board_State[i][row]["color"] != player_Turn and board_State[i][row]["chess_piece"] == ("queen" or "rook"):
-                    for move in available_Move:
-                        if move[1] != row:
-                            available_Move.splice(move, 1);
-                    break;
-        elif col > pos_kings[player_Turn][0]:
-            for i in range(col+1,8):
-                if board_State[i][row]["color"] != player_Turn and board_State[i][row]["chess_piece"] == ("queen" or "rook"):
-                    for move in available_Move:
-                        if move[1] != row:
-                            available_Move.splice(move, 1);
-                    break;
+    blocking = False
+    diffY = row - pos_kings[player_Turn][0]
+    diffX = col - pos_kings[player_Turn][1]
 
-    # elif Math.abs(col-pos_kings[player_Turn][0]) == Math.abs(row-pos_kings[player_Turn][1]):
-    #     if col-pos_kings[player_Turn][0] < 0:
-    #         if row-pos_kings[player_Turn][1] < 0:
+    if diffY == 0:
 
-        
+        if diffX < 0:
+            for i in range(col+1, pos_kings[player_Turn][1]):
+                if board_State[row][i]["chess_piece"] != "":
+                    blocking = True
+                    break
+            print("hello1")
+            if not blocking:
+                for i in range(col-1,-1,-1):
+                    if board_State[row][i]["chess_piece"] != "":
+                        if board_State[row][i]["color"] != player_Turn and board_State[row][i]["chess_piece"] == ("queen" or "rook"):
+                            for move in range(len(available_Move)-1, -1, -1):
+                                if available_Move[move][0] != row:
+                                    available_Move.pop(move)
+                        break
+
+        elif diffX > 0:
+            for i in range(col-1, pos_kings[player_Turn][1], -1):
+                if board_State[row][i]["chess_piece"] != "":
+                    blocking = True
+                    break
+            print("hello2")
+            if not blocking:
+                for i in range(col+1,8):
+                    if board_State[row][i]["chess_piece"] != "":
+                        if board_State[row][i]["color"] != player_Turn and board_State[row][i]["chess_piece"] == ("queen" or "rook"):
+                            for move in range(len(available_Move)-1, -1, -1):
+                                if available_Move[move][0] != row:
+                                    available_Move.pop(move)
+                        break
+
+    elif diffX == 0:
+
+        if diffY < 0:
+            for i in range(row+1, pos_kings[player_Turn][0]):
+                if board_State[i][col]["chess_piece"] != "":
+                    blocking = True
+                    break
+            print("hello3")
+            if not blocking:
+                for i in range(row-1,-1,-1):
+                    if board_State[i][col]["chess_piece"] != "":
+                        if board_State[i][col]["color"] != player_Turn and board_State[i][col]["chess_piece"] == ("queen" or "rook"):
+                            for move in range(len(available_Move)-1, -1, -1):
+                                if available_Move[move][1] != col:
+                                    available_Move.pop(move)
+                        break
+
+        elif diffY > 0:
+            for i in range(row-1, pos_kings[player_Turn][0], -1):
+                if board_State[i][col]["chess_piece"] != "":
+                    blocking = True
+                    break
+            print("hello4")
+            if not blocking:
+                for i in range(row+1,8):
+                    if board_State[i][col]["chess_piece"] != "":
+                        if board_State[i][col]["color"] != player_Turn and board_State[i][col]["chess_piece"] == ("queen" or "rook"):
+                            for move in range(len(available_Move)-1, -1, -1):
+                                if available_Move[move][1] != col:
+                                    available_Move.pop(move)
+                        break
+
+    elif abs(diffY) == abs(diffX):
+
+        if diffX*diffY < 0:
+
+            if diffY < 0:
+                for i in range(1, diffX):
+                    if board_State[row+i][col-i]["chess_piece"] != "":
+                        blocking = True
+                        break
+                print("hello5")
+                if not blocking:
+                    for i in range(1, min(8-col, row+1)):
+                        if board_State[row-i][col+i]["chess_piece"] != "":
+                            if board_State[row-i][col+i]["color"] != player_Turn and board_State[row-i][col+i]["chess_piece"] == ("queen" or "bishop"):
+                                for move in range(len(available_Move)-1, -1, -1):
+                                    if (available_Move[move][0]-row)*(available_Move[move][1]-col) >= 0:
+                                        available_Move.pop(move)
+                            break
+
+            else:
+                for i in range(1, -diffX):
+                    if board_State[row-i][col+i]["chess_piece"] != "":
+                        blocking = True
+                        break
+                print("hello6")
+                if not blocking:
+                    for i in range(1, min(col+1, 8-row)):
+                        if board_State[row+i][col-i]["chess_piece"] != "":
+                            if board_State[row+i][col-i]["color"] != player_Turn and board_State[row+i][col-i]["chess_piece"] == ("queen" or "bishop"):
+                                for move in range(len(available_Move)-1, -1, -1):
+                                    if (available_Move[move][0]-row)*(available_Move[move][1]-col) >= 0:
+                                        available_Move.pop(move)
+                            break
+
+        elif diffX*diffY > 0:
+
+            if diffY < 0:
+                for i in range(1, -diffX):
+                    if board_State[row+i][col+i]["chess_piece"] != "":
+                        blocking = True
+                        break
+                print("hello7")
+                if not blocking:
+                    for i in range(1, min(col+1, row+1)):
+                        if board_State[row-i][col-i]["chess_piece"] != "":
+                            if board_State[row-i][col-i]["color"] != player_Turn and board_State[row-i][col-i]["chess_piece"] == ("queen" or "bishop"):
+                                for move in range(len(available_Move)-1, -1, -1):
+                                    if (available_Move[move][0]-row)*(available_Move[move][1]-col) <= 0:
+                                        available_Move.pop(move)
+                            break
+
+            else:
+                for i in range(1, diffX):
+                    if board_State[row-i][col-i]["chess_piece"] != "":
+                        blocking = True
+                        break
+                print("hello8")
+                if not blocking:
+                    for i in range(1, min(8-col, 8-row)):
+                        if board_State[row+i][col+i]["chess_piece"] != "":
+                            if board_State[row+i][col+i]["color"] != player_Turn and board_State[row+i][col+i]["chess_piece"] == ("queen" or "bishop"):
+                                for move in range(len(available_Move)-1, -1, -1):
+                                    if (available_Move[move][0]-row)*(available_Move[move][1]-col) <= 0:
+                                        available_Move.pop(move)
+                            break
 
 
 def board_Display():
@@ -251,48 +412,51 @@ col, row = (0, 0)
 def coord_pickup(e):
 
     global chess_Pieces_img, player_Turn, board_State, pickup, col, row, king_Picked
-    row, col = (int((e.x-20)/70), int((e.y-20)/70))
+    row, col = (int((e.y-20)/70), int((e.x-20)/70))
     if row>=0 and row<8 and col>=0 and col<8:
-        if board_State[col][row]["chess_piece"]!="" and board_State[col][row]["color"]==player_Turn:
-            move_Set(col, row)
-            commit_Suicide()
+        if board_State[row][col]["chess_piece"]!="" and board_State[row][col]["color"]==player_Turn:
+            row, col = (int(row), int(col))
+            move_Set(row, col)
+            commit_Suicide(row, col)
             display_Move()
-            game_Board.delete(board_State[col][row]["image"])
-            img = chess_Pieces_img[chess_Collab[board_State[col][row]["color"]]][chess_Collab[board_State[col][row]["chess_piece"]]]
-            board_State[col][row]["image"] = game_Board.create_image(e.x, e.y, image=img)
+            game_Board.delete(board_State[row][col]["image"])
+            img = chess_Pieces_img[chess_Collab[board_State[row][col]["color"]]][chess_Collab[board_State[row][col]["chess_piece"]]]
+            board_State[row][col]["image"] = game_Board.create_image(e.x, e.y, image=img)
             pickup = True
-            if board_State[col][row]["chess_piece"] == "king":
+            if board_State[row][col]["chess_piece"] == "king":
                 king_Picked = True
 
 def move(e):
     
     global chess_Pieces_img, player_Turn, board_State, pickup, col, row
     if pickup:
-        game_Board.coords(board_State[col][row]["image"], e.x, e.y)
+        game_Board.coords(board_State[row][col]["image"], e.x, e.y)
 
 def coord_drop(e):
 
-    global chess_Pieces_img, player_Turn, board_State, available_Move, pickup, col, row, king_Picked
+    global chess_Pieces_img, player_Turn, board_State, available_Move, pickup, col, row, king_Picked, check_Mate
     if pickup:
         new_imgx = int((e.x-20)/70)
         new_imgy = int((e.y-20)/70)
-        if new_imgx>=0 and new_imgx<8 and new_imgy>=0 and new_imgy<8 and (new_imgx!=row or new_imgy!=col) and [new_imgy, new_imgx] in available_Move:
+        if new_imgx>=0 and new_imgx<8 and new_imgy>=0 and new_imgy<8 and (new_imgx!=col or new_imgy!=row) and [new_imgy, new_imgx] in available_Move:
             if board_State[new_imgy][new_imgx]["chess_piece"] != "":
                 game_Board.delete(board_State[new_imgy][new_imgx]["image"])
-            board_State[new_imgy][new_imgx]["color"] = board_State[col][row]["color"]
-            board_State[col][row]["color"] = ""
-            board_State[new_imgy][new_imgx]["chess_piece"] = board_State[col][row]["chess_piece"]
-            board_State[col][row]["chess_piece"] = ""
-            board_State[new_imgy][new_imgx]["image"] = board_State[col][row]["image"]
-            board_State[col][row]["image"] = ""
+            board_State[new_imgy][new_imgx]["color"] = board_State[row][col]["color"]
+            board_State[row][col]["color"] = ""
+            board_State[new_imgy][new_imgx]["chess_piece"] = board_State[row][col]["chess_piece"]
+            board_State[row][col]["chess_piece"] = ""
+            board_State[new_imgy][new_imgx]["image"] = board_State[row][col]["image"]
+            board_State[row][col]["image"] = ""
             if king_Picked:
                 pos_kings[board_State[new_imgy][new_imgx]["color"]] = (new_imgy, new_imgx)
-                king_Picked = False;
-                print(pos_kings);
+                king_Picked = False
+                print(pos_kings)
             next_Move()
+            if check_Mate:
+                move_List.insert(END, "checkmate")
         else:
-            new_imgx = row
-            new_imgy = col
+            new_imgx = col
+            new_imgy = row
         game_Board.coords(board_State[new_imgy][new_imgx]["image"], new_imgx*70+20, new_imgy*70+20)
         game_Board.itemconfig(board_State[new_imgy][new_imgx]["image"], anchor=NW)
         pickup = False
