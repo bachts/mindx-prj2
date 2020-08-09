@@ -4,6 +4,8 @@ root = Tk()
 root.title("Chess")
 root.geometry("800x600")
 
+black_Check = False
+white_Check = False
 check_Mate = False
 king_Picked = False
 
@@ -56,6 +58,7 @@ def next_Move():
             if board_State[i][x]["color"] != player_Turn and board_State[i][x]["chess_piece"] == ("queen" or "rook"):
                 check_Mate = True
                 print("hello9")
+                return (i, x)
             break
 
     for i in range(y-1, -1, -1):
@@ -63,6 +66,7 @@ def next_Move():
             if board_State[i][x]["color"] != player_Turn and board_State[i][x]["chess_piece"] == ("queen" or "rook"):
                 check_Mate = True
                 print("hello10")
+                return (i, x)
             break
 
     for i in range(x+1, 8):
@@ -70,6 +74,7 @@ def next_Move():
             if board_State[y][i]["color"] != player_Turn and board_State[y][i]["chess_piece"] == ("queen" or "rook"):
                 check_Mate = True
                 print("hello11")
+                return (y, i)
             break
     
     for i in range(x-1, -1, -1):
@@ -77,20 +82,25 @@ def next_Move():
             if board_State[y][i]["color"] != player_Turn and board_State[y][i]["chess_piece"] == ("queen" or "rook"):
                 check_Mate = True
                 print("hello12")
+                return (y, i)
             break
 
     for i in range(1, min(8-x, y+1)):
         if board_State[y-i][x+i]["chess_piece"] != "":
-            if board_State[y-i][x+i]["color"] != player_Turn and board_State[y-i][x+i]["chess_piece"] == ("queen" or "bishop"):
-                check_Mate = True
-                print("hello13")
+            if board_State[y-i][x+i]["color"] != player_Turn:
+                if board_State[y-i][x+i]["chess_piece"] == ("queen" or "bishop") or (board_State[y-i][x+i]["chess_piece"] == "pawn" and i==1):
+                    check_Mate = True
+                    print("hello13")
+                    return
             break
 
     for i in range(1, min(x+1, 8-y)):
         if board_State[y+i][x-i]["chess_piece"] != "":
-            if board_State[y+i][x-i]["color"] != player_Turn and board_State[y+i][x-i]["chess_piece"] == ("queen" or "bishop"):
-                check_Mate = True
-                print("hello14")
+            if board_State[y+i][x-i]["color"] != player_Turn:
+                if board_State[y+i][x-i]["chess_piece"] == ("queen" or "bishop") or (board_State[y-i][x+i]["chess_piece"] == "pawn" and i==1):
+                    check_Mate = True
+                    print("hello14")
+                    return
             break
 
     for i in range(1, min(x+1, y+1)):
@@ -98,6 +108,7 @@ def next_Move():
             if board_State[y-i][x-i]["color"] != player_Turn and board_State[y-i][x-i]["chess_piece"] == ("queen" or "bishop"):
                 check_Mate = True
                 print("hello15")
+                return
             break
 
     for i in range(1, min(8-x, 8-y)):
@@ -105,6 +116,7 @@ def next_Move():
             if board_State[y+i][x+i]["color"] != player_Turn and board_State[y+i][x+i]["chess_piece"] == ("queen" or "bishop"):
                 check_Mate = True
                 print("hello16")
+                return
             break
 
     for i in range(8):
@@ -114,8 +126,9 @@ def next_Move():
             if board_State[y+coordY][x+coordX]["chess_piece"] == "knight" and board_State[y+coordY][x+coordX]["color"]!=board_State[y][x]["color"]:
                 check_Mate = True
                 print("hello"+str(i))
+                return
 
-def move_Set(y,x):
+def move_Set(y, x):
 
     global available_Move, board_State
 
@@ -269,7 +282,7 @@ def commit_Suicide(row, col):
             if not blocking:
                 for i in range(col-1,-1,-1):
                     if board_State[row][i]["chess_piece"] != "":
-                        if board_State[row][i]["color"] != player_Turn and board_State[row][i]["chess_piece"] == ("queen" or "rook"):
+                        if board_State[row][i]["color"] != player_Turn and (board_State[row-i][col+i]["chess_piece"] == "queen" or board_State[row-i][col+i]["chess_piece"] == "rook"):
                             for move in range(len(available_Move)-1, -1, -1):
                                 if available_Move[move][0] != row:
                                     available_Move.pop(move)
@@ -284,7 +297,7 @@ def commit_Suicide(row, col):
             if not blocking:
                 for i in range(col+1,8):
                     if board_State[row][i]["chess_piece"] != "":
-                        if board_State[row][i]["color"] != player_Turn and board_State[row][i]["chess_piece"] == ("queen" or "rook"):
+                        if board_State[row][i]["color"] != player_Turn and (board_State[row-i][col+i]["chess_piece"] == "queen" or board_State[row-i][col+i]["chess_piece"] == "rook"):
                             for move in range(len(available_Move)-1, -1, -1):
                                 if available_Move[move][0] != row:
                                     available_Move.pop(move)
@@ -301,7 +314,7 @@ def commit_Suicide(row, col):
             if not blocking:
                 for i in range(row-1,-1,-1):
                     if board_State[i][col]["chess_piece"] != "":
-                        if board_State[i][col]["color"] != player_Turn and board_State[i][col]["chess_piece"] == ("queen" or "rook"):
+                        if board_State[i][col]["color"] != player_Turn and (board_State[row-i][col+i]["chess_piece"] == "queen" or board_State[row-i][col+i]["chess_piece"] == "rook"):
                             for move in range(len(available_Move)-1, -1, -1):
                                 if available_Move[move][1] != col:
                                     available_Move.pop(move)
@@ -316,7 +329,7 @@ def commit_Suicide(row, col):
             if not blocking:
                 for i in range(row+1,8):
                     if board_State[i][col]["chess_piece"] != "":
-                        if board_State[i][col]["color"] != player_Turn and board_State[i][col]["chess_piece"] == ("queen" or "rook"):
+                        if board_State[i][col]["color"] != player_Turn and (board_State[row-i][col+i]["chess_piece"] == "queen" or board_State[row-i][col+i]["chess_piece"] == "rook"):
                             for move in range(len(available_Move)-1, -1, -1):
                                 if available_Move[move][1] != col:
                                     available_Move.pop(move)
@@ -335,7 +348,8 @@ def commit_Suicide(row, col):
                 if not blocking:
                     for i in range(1, min(8-col, row+1)):
                         if board_State[row-i][col+i]["chess_piece"] != "":
-                            if board_State[row-i][col+i]["color"] != player_Turn and board_State[row-i][col+i]["chess_piece"] == ("queen" or "bishop"):
+                            if board_State[row-i][col+i]["color"] != player_Turn and (board_State[row-i][col+i]["chess_piece"] == "queen" or board_State[row-i][col+i]["chess_piece"] == "bishop"):
+                                print(row, col)
                                 for move in range(len(available_Move)-1, -1, -1):
                                     if (available_Move[move][0]-row)*(available_Move[move][1]-col) >= 0:
                                         available_Move.pop(move)
@@ -350,7 +364,7 @@ def commit_Suicide(row, col):
                 if not blocking:
                     for i in range(1, min(col+1, 8-row)):
                         if board_State[row+i][col-i]["chess_piece"] != "":
-                            if board_State[row+i][col-i]["color"] != player_Turn and board_State[row+i][col-i]["chess_piece"] == ("queen" or "bishop"):
+                            if board_State[row+i][col-i]["color"] != player_Turn and (board_State[row-i][col+i]["chess_piece"] == "queen" or board_State[row-i][col+i]["chess_piece"] == "bishop"):
                                 for move in range(len(available_Move)-1, -1, -1):
                                     if (available_Move[move][0]-row)*(available_Move[move][1]-col) >= 0:
                                         available_Move.pop(move)
@@ -367,7 +381,7 @@ def commit_Suicide(row, col):
                 if not blocking:
                     for i in range(1, min(col+1, row+1)):
                         if board_State[row-i][col-i]["chess_piece"] != "":
-                            if board_State[row-i][col-i]["color"] != player_Turn and board_State[row-i][col-i]["chess_piece"] == ("queen" or "bishop"):
+                            if board_State[row-i][col-i]["color"] != player_Turn and (board_State[row-i][col+i]["chess_piece"] == "queen" or board_State[row-i][col+i]["chess_piece"] == "bishop"):
                                 for move in range(len(available_Move)-1, -1, -1):
                                     if (available_Move[move][0]-row)*(available_Move[move][1]-col) <= 0:
                                         available_Move.pop(move)
@@ -382,7 +396,7 @@ def commit_Suicide(row, col):
                 if not blocking:
                     for i in range(1, min(8-col, 8-row)):
                         if board_State[row+i][col+i]["chess_piece"] != "":
-                            if board_State[row+i][col+i]["color"] != player_Turn and board_State[row+i][col+i]["chess_piece"] == ("queen" or "bishop"):
+                            if board_State[row+i][col+i]["color"] != player_Turn and (board_State[row-i][col+i]["chess_piece"] == "queen" or board_State[row-i][col+i]["chess_piece"] == "bishop"):
                                 for move in range(len(available_Move)-1, -1, -1):
                                     if (available_Move[move][0]-row)*(available_Move[move][1]-col) <= 0:
                                         available_Move.pop(move)
