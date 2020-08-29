@@ -8,6 +8,15 @@ root.geometry("800x600")
 
 
 
+# menu = Menu(root)
+
+
+
+
+# frame1 = Frame(root)
+# frame1.pack(side=BOTTOM)
+
+
 
 game_Board = Canvas(root, width=600, height=600, bg="#EBE8BE")
 game_Board.pack(side=LEFT)
@@ -32,6 +41,7 @@ board_Display()
 
 
 
+blank = {"chess_piece": "", "color": "", "image": ""}
 pieces_Pos = {
     "white": {
         "pawn": [],
@@ -74,12 +84,12 @@ board_State = []
 
 def setup_chess_Pieces():
 
-    global board_State, pieces_Pos, pieces_Img
+    global board_State, pieces_Pos, pieces_Img, blank
 
     for i in range(8):
         temp = [];
         for j in range(8):
-            temp.append({"chess_piece": "", "color": "", "image": ""});
+            temp.append(blank.copy());
         board_State.append(temp)
 
     for i in range(8):
@@ -112,6 +122,19 @@ setup_chess_Pieces()
 
 
 
+frame1 = Frame(root)
+frame1.pack(side=RIGHT, fill=)
+
+def Undo():
+    pass
+undo_Btn = Button(frame1, text="UNDO", command=Undo)
+undo_Btn.pack(side=TOP, fill=X)
+
+move_List = Message(frame1, width=200, relief=SUNKEN)
+move_List.pack(side=BOTTOM, fill=Y)
+
+
+
 
 player_Turn = WHITE
 
@@ -123,7 +146,6 @@ def next_Move():
         player_Turn = BLACK
     else:
         player_Turn = WHITE
-
 
 
 
@@ -199,7 +221,6 @@ def find_Check():
                 return (coordY, coordX)
     
     return -1
-
 
 
 
@@ -335,6 +356,7 @@ def block_Check(y, x):
     global board_State, available_Move, player_Turn, pieces_Pos, check_Dist
 
     pos = pieces_Pos[player_Turn]["king"][0]
+
     if check_Dist != -1:
         if board_State[y][x]["chess_piece"] == "king":
             return
@@ -388,7 +410,7 @@ def block_Check(y, x):
 
 def commit_Suicide(y, x):
 
-    global pieces_Img, available_Move, player_Turn, pieces_Pos
+    global pieces_Img, available_Move, player_Turn, pieces_Pos, blank
 
     blocking = False
     diffY = y - pieces_Pos[player_Turn]["king"][0][0]
@@ -399,25 +421,19 @@ def commit_Suicide(y, x):
         for i in range(len(available_Move)-1, -1, -1):
             
             move = available_Move[i]
-            temp = {"chess_piece": "", "color": "", "image": ""}
+            temp = blank.copy()
             pos = pieces_Pos[player_Turn]["king"][0]
             BoW = (player_Turn==WHITE) and 7 or 0
 
             if abs(move[1]-x)==2:
 
-                board_State[move[0]][move[1]]["color"] = player_Turn
-                board_State[move[0]][move[1]]["chess_piece"] = "king"
-
-                board_State[pos[0]][pos[1]]["color"] = ""
-                board_State[pos[0]][pos[1]]["chess_piece"] = ""
+                board_State[move[0]][move[1]] = board_State[pos[0]][pos[1]].copy()
+                board_State[pos[0]][pos[1]] = blank.copy()
 
                 if move[1]-x==2:
 
-                    board_State[BoW][5]["color"] = player_Turn
-                    board_State[BoW][5]["chess_piece"] = "rook"
-
-                    board_State[BoW][7]["color"] = ""
-                    board_State[BoW][7]["chess_piece"] = ""
+                    board_State[BoW][5] = board_State[BoW][7].copy()
+                    board_State[BoW][7] = blank.copy()
 
                     pieces_Pos[player_Turn]["king"][0] = move
                     pieces_Pos[player_Turn]["rook"].remove((BoW, 7))
@@ -429,25 +445,16 @@ def commit_Suicide(y, x):
                     pieces_Pos[player_Turn]["rook"].remove((BoW, 5))
                     pieces_Pos[player_Turn]["rook"].append((BoW, 7))
 
-                    board_State[pos[0]][pos[1]]["color"] = player_Turn
-                    board_State[pos[0]][pos[1]]["chess_piece"] = "king"
+                    board_State[pos[0]][pos[1]] = board_State[move[0]][move[1]].copy()
+                    board_State[move[0]][move[1]] = blank.copy()
 
-                    board_State[move[0]][move[1]]["color"] = ""
-                    board_State[move[0]][move[1]]["chess_piece"] = ""
-
-                    board_State[BoW][7]["color"] = player_Turn
-                    board_State[BoW][7]["chess_piece"] = "rook"
-
-                    board_State[BoW][5]["color"] = ""
-                    board_State[BoW][5]["chess_piece"] = ""
+                    board_State[BoW][7] = board_State[BoW][5].copy()
+                    board_State[BoW][5] = blank.copy()
 
                 else:
 
-                    board_State[BoW][3]["color"] = player_Turn
-                    board_State[BoW][3]["chess_piece"] = "rook"
-
-                    board_State[BoW][0]["color"] = ""
-                    board_State[BoW][0]["chess_piece"] = ""
+                    board_State[BoW][3] = board_State[BoW][0].copy()
+                    board_State[BoW][0] = blank.copy()
 
                     pieces_Pos[player_Turn]["king"][0] = move
                     pieces_Pos[player_Turn]["rook"].remove((BoW, 0))
@@ -459,40 +466,27 @@ def commit_Suicide(y, x):
                     pieces_Pos[player_Turn]["rook"].remove((BoW, 3))
                     pieces_Pos[player_Turn]["rook"].append((BoW, 0))
 
-                    board_State[pos[0]][pos[1]]["color"] = player_Turn
-                    board_State[pos[0]][pos[1]]["chess_piece"] = "king"
+                    board_State[pos[0]][pos[1]] = board_State[move[0]][move[1]].copy()
+                    board_State[move[0]][move[1]] = blank.copy()
 
-                    board_State[move[0]][move[1]]["color"] = ""
-                    board_State[move[0]][move[1]]["chess_piece"] = ""
-
-                    board_State[BoW][0]["color"] = player_Turn
-                    board_State[BoW][0]["chess_piece"] = "rook"
-
-                    board_State[BoW][3]["color"] = ""
-                    board_State[BoW][3]["chess_piece"] = ""
+                    board_State[BoW][0] = board_State[BoW][3].copy()
+                    board_State[BoW][3] = blank.copy()
 
             else:
 
                 if board_State[move[0]][move[1]]["chess_piece"] != "":
                     game_Board.coords(board_State[move[0]][move[1]]["image"], -70, -70)
-                    temp["color"] = board_State[move[0]][move[1]]["color"]
-                    temp["chess_piece"] = board_State[move[0]][move[1]]["chess_piece"]
+                    temp = board_State[move[0]][move[1]].copy()
 
-                board_State[move[0]][move[1]]["color"] = board_State[pos[0]][pos[1]]["color"]
-                board_State[pos[0]][pos[1]]["color"] = ""
-
-                board_State[move[0]][move[1]]["chess_piece"] = board_State[pos[0]][pos[1]]["chess_piece"]
-                board_State[pos[0]][pos[1]]["chess_piece"] = ""
+                board_State[move[0]][move[1]] = board_State[pos[0]][pos[1]].copy()
+                board_State[pos[0]][pos[1]] = blank.copy()
 
                 pieces_Pos[player_Turn]["king"][0] = move
                 coord_Check = find_Check()
                 pieces_Pos[player_Turn]["king"][0] = pos
 
-                board_State[pos[0]][pos[1]]["color"] = player_Turn
-                board_State[pos[0]][pos[1]]["chess_piece"] = "king"
-
-                board_State[move[0]][move[1]]["color"] = temp["color"]
-                board_State[move[0]][move[1]]["chess_piece"] = temp["chess_piece"]
+                board_State[pos[0]][pos[1]] = board_State[move[0]][move[1]].copy()
+                board_State[move[0]][move[1]] = temp.copy()
 
                 if board_State[move[0]][move[1]]["chess_piece"] != "":
                     game_Board.coords(board_State[move[0]][move[1]]["image"], move[1]*70+20, move[0]*70+20)
@@ -623,6 +617,7 @@ def commit_Suicide(y, x):
                             break
 
 def find_Moves(y, x):
+
     move_Set(y, x)
     block_Check(y, x)
     commit_Suicide(y, x)
@@ -634,18 +629,21 @@ def find_Moves(y, x):
 
 def check_Or_checkmate():
 
-    global available_Move, board_State, pieces_Pos, player_Turn, check_Dist
+    global available_Move, pieces_Pos, player_Turn, check_Dist
 
     ascending = ["pawn", "rook", "knight", "bishop", "queen", "king"]
+    moves = []
 
     for i in range(6):
         coord_arr = pieces_Pos[player_Turn][ascending[i]]
         for j in range(len(coord_arr)):
             find_Moves(coord_arr[j][0], coord_arr[j][1])
+            moves.append(available_Move)
+            del_Move()
 
-    if len(available_Move) > 0:
-        available_Move = []
-        return False
+    for move in moves:
+        if len(move) > 0:
+            return False
 
     return True
 
@@ -654,11 +652,11 @@ def disable(y, x):
     global board_State, player_Turn, moved_State
 
     if moved_State[(player_Turn==WHITE) and BLACK or WHITE]["0-0"]:
-        if (y==(player_Turn==WHITE) and 0 or 7) and x==0:
+        if y==((player_Turn==WHITE) and 0 or 7) and x==7:
             moved_State[(player_Turn==WHITE) and BLACK or WHITE]["0-0"] = False
 
     if moved_State[(player_Turn==WHITE) and BLACK or WHITE]["0-0-0"]:
-        if (y==(player_Turn==WHITE) and 0 or 7) and x==0:
+        if y==((player_Turn==WHITE) and 0 or 7) and x==0:
             moved_State[(player_Turn==WHITE) and BLACK or WHITE]["0-0-0"] = False
 
 
@@ -691,13 +689,12 @@ col, row = (0, 0)
 
 def coord_pickup(e):
 
-    global pieces_Img, player_Turn, board_State, pickup, col, row
+    global pieces_Img, player_Turn, board_State, pickup, col, row, checkMate
 
     row, col = (int((e.y-20)/70), int((e.x-20)/70))
     if not checkMate:
         if row>=0 and row<8 and col>=0 and col<8:
             if board_State[row][col]["chess_piece"]!="" and board_State[row][col]["color"]==player_Turn:
-                row, col = (int(row), int(col))
                 find_Moves(row, col)
                 display_Move()
                 game_Board.delete(board_State[row][col]["image"])
@@ -714,12 +711,13 @@ def move(e):
 
 def coord_drop(e):
 
-    global player_Turn, board_State, available_Move, pieces_Pos, pickup, col, row, check_Dist, checkMate, moved_State
+    global player_Turn, board_State, available_Move, pieces_Pos, pickup, col, row, check_Dist, checkMate, moved_State, blank, pieces_Img, game_Board
 
     if pickup:
         new_imgx = int((e.x-20)/70)
         new_imgy = int((e.y-20)/70)
         if new_imgx>=0 and new_imgx<8 and new_imgy>=0 and new_imgy<8 and (new_imgx!=col or new_imgy!=row) and (new_imgy, new_imgx) in available_Move:
+
             if board_State[new_imgy][new_imgx]["chess_piece"] != "":
                 disable(new_imgy, new_imgx)
                 game_Board.delete(board_State[new_imgy][new_imgx]["image"])
@@ -729,17 +727,13 @@ def coord_drop(e):
                 if board_State[row][col]["chess_piece"] == "rook" and col==7:
                     moved_State[player_Turn]["0-0"] = False
 
-                if board_State[row][col]["chess_piece"] == "king":
+                elif board_State[row][col]["chess_piece"] == "king":
                     moved_State[player_Turn]["0-0"] = False
                     if new_imgx-col==2:
                         moved_State[player_Turn]["0-0"] = False
                         BoW = (player_Turn==WHITE) and 7 or 0
-                        board_State[BoW][5]["color"] = player_Turn
-                        board_State[BoW][7]["color"] = ""
-                        board_State[BoW][5]["chess_piece"] = "rook"
-                        board_State[BoW][7]["chess_piece"] = ""
-                        board_State[BoW][5]["image"] = board_State[BoW][7]["image"]
-                        board_State[BoW][7]["image"] = ""
+                        board_State[BoW][5] = board_State[BoW][7].copy()
+                        board_State[BoW][7] = blank.copy()
                         pieces_Pos[player_Turn]["rook"].remove((BoW, 7))
                         pieces_Pos[player_Turn]["rook"].append((BoW, 5))
                         game_Board.coords(board_State[BoW][5]["image"], 5*70+20, BoW*70+20)
@@ -749,29 +743,52 @@ def coord_drop(e):
                 if board_State[row][col]["chess_piece"] == "rook" and col==0:
                     moved_State[player_Turn]["0-0-0"] = False
 
-                if board_State[row][col]["chess_piece"] == "king":
+                elif board_State[row][col]["chess_piece"] == "king":
                     moved_State[player_Turn]["0-0-0"] = False
                     if col-new_imgx==2:
                         BoW = (player_Turn==WHITE) and 7 or 0
-                        board_State[BoW][3]["color"] = player_Turn
-                        board_State[BoW][0]["color"] = ""
-                        board_State[BoW][3]["chess_piece"] = "rook"
-                        board_State[BoW][0]["chess_piece"] = ""
-                        board_State[BoW][3]["image"] = board_State[BoW][0]["image"]
-                        board_State[BoW][0]["image"] = ""
+                        board_State[BoW][3] = board_State[BoW][0].copy()
+                        board_State[BoW][0] = blank.copy()
                         pieces_Pos[player_Turn]["rook"].remove((BoW, 0))
                         pieces_Pos[player_Turn]["rook"].append((BoW, 3))
                         game_Board.coords(board_State[BoW][3]["image"], 3*70+20, BoW*70+20)
 
-            board_State[new_imgy][new_imgx]["color"] = player_Turn
-            board_State[row][col]["color"] = ""
-            board_State[new_imgy][new_imgx]["chess_piece"] = board_State[row][col]["chess_piece"]
-            board_State[row][col]["chess_piece"] = ""
-            board_State[new_imgy][new_imgx]["image"] = board_State[row][col]["image"]
-            board_State[row][col]["image"] = ""
-
+            board_State[new_imgy][new_imgx] = board_State[row][col].copy()
+            board_State[row][col] = blank.copy()
             pieces_Pos[player_Turn][board_State[new_imgy][new_imgx]["chess_piece"]].remove((row, col))
+
+            if board_State[new_imgy][new_imgx]["chess_piece"] == "pawn":
+                if (player_Turn==WHITE and new_imgy==0) or (player_Turn==BLACK and new_imgy==7):
+
+                    ask = Toplevel()
+                    ask.title("Promote to")
+                    ask.focus_set()
+                    ask.grab_set()
+
+                    def delete():
+                        ask.destroy()
+
+                    def change(piece):
+                        board_State[new_imgy][new_imgx]["chess_piece"] = piece
+                        game_Board.delete(board_State[new_imgy][new_imgx]["image"])
+                        img = pieces_Img[board_State[new_imgy][new_imgx]["color"]][board_State[new_imgy][new_imgx]["chess_piece"]]
+                        board_State[new_imgy][new_imgx]["image"] = game_Board.create_image(new_imgx*70+20, new_imgy*70+20, anchor=NW, image=img)
+                        root.focus_set()
+                        ask.protocol("WM_DELETE_WINDOW", delete)
+
+                    ask.protocol("WM_DELETE_WINDOW", lambda:0)
+                    rook = Button(ask, text="ROOK", command=lambda : change("rook"))
+                    knight = Button(ask, text="KNIGHT", command=lambda : change("knight"))
+                    bishop = Button(ask, text="BISHOP", command=lambda : change("bishop"))
+                    queen = Button(ask, text="QUEEN", command=lambda : change("queen"))
+                    rook.pack()
+                    knight.pack()
+                    bishop.pack()
+                    queen.pack()
+                    root.wait_window(ask)
+
             pieces_Pos[player_Turn][board_State[new_imgy][new_imgx]["chess_piece"]].append((new_imgy, new_imgx))
+
             next_Move()
             check_Dist = find_Check()
             if check_Dist != -1:
@@ -781,25 +798,16 @@ def coord_drop(e):
                     # move_List.insert(END, "checkmate")
                     game_Board.coords(board_State[new_imgy][new_imgx]["image"], new_imgx*70+20, new_imgy*70+20)
                     game_Board.itemconfig(board_State[new_imgy][new_imgx]["image"], anchor=NW)
+                    pickup = False
                     return
                 # move_List.insert(END, "check")
         else:
             new_imgx = col
             new_imgy = row
+        del_Move()
         game_Board.coords(board_State[new_imgy][new_imgx]["image"], new_imgx*70+20, new_imgy*70+20)
         game_Board.itemconfig(board_State[new_imgy][new_imgx]["image"], anchor=NW)
         pickup = False
-        del_Move()
-
-
-
-
-scroll_Bar = Scrollbar(root)
-scroll_Bar.pack(side=RIGHT)
-
-move_List = Listbox(root, width=200, yscrollcommand = scroll_Bar.set)
-move_List.pack(side=LEFT)
-scroll_Bar.config(command=move_List.yview)
 
 
 
