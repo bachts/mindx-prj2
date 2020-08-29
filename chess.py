@@ -115,7 +115,7 @@ def setup_chess_Pieces():
         for j in range(8):
             if not board_State[i][j]["chess_piece"]=="":
                 img = pieces_Img[board_State[i][j]["color"]][board_State[i][j]["chess_piece"]]
-                board_State[i][j]["image"] = game_Board.create_image(20+j*70, 20+i*70, anchor=NW, image=img)
+                board_State[i][j]["image"] = game_Board.create_image(30+j*70, 30+i*70, anchor=NW, image=img)
 
 setup_chess_Pieces()
 
@@ -123,7 +123,7 @@ setup_chess_Pieces()
 
 
 frame1 = Frame(root)
-frame1.pack(side=RIGHT, fill=)
+frame1.pack(side=RIGHT, fill=BOTH)
 
 def Undo():
     pass
@@ -489,7 +489,7 @@ def commit_Suicide(y, x):
                 board_State[move[0]][move[1]] = temp.copy()
 
                 if board_State[move[0]][move[1]]["chess_piece"] != "":
-                    game_Board.coords(board_State[move[0]][move[1]]["image"], move[1]*70+20, move[0]*70+20)
+                    game_Board.coords(board_State[move[0]][move[1]]["image"], move[1]*70+30, move[0]*70+30)
                 
             if coord_Check != -1:
                 available_Move.pop(i)
@@ -736,7 +736,7 @@ def coord_drop(e):
                         board_State[BoW][7] = blank.copy()
                         pieces_Pos[player_Turn]["rook"].remove((BoW, 7))
                         pieces_Pos[player_Turn]["rook"].append((BoW, 5))
-                        game_Board.coords(board_State[BoW][5]["image"], 5*70+20, BoW*70+20)
+                        game_Board.coords(board_State[BoW][5]["image"], 5*70+30, BoW*70+30)
 
             if moved_State[player_Turn]["0-0-0"]:
 
@@ -751,7 +751,7 @@ def coord_drop(e):
                         board_State[BoW][0] = blank.copy()
                         pieces_Pos[player_Turn]["rook"].remove((BoW, 0))
                         pieces_Pos[player_Turn]["rook"].append((BoW, 3))
-                        game_Board.coords(board_State[BoW][3]["image"], 3*70+20, BoW*70+20)
+                        game_Board.coords(board_State[BoW][3]["image"], 3*70+30, BoW*70+30)
 
             board_State[new_imgy][new_imgx] = board_State[row][col].copy()
             board_State[row][col] = blank.copy()
@@ -772,7 +772,7 @@ def coord_drop(e):
                         board_State[new_imgy][new_imgx]["chess_piece"] = piece
                         game_Board.delete(board_State[new_imgy][new_imgx]["image"])
                         img = pieces_Img[board_State[new_imgy][new_imgx]["color"]][board_State[new_imgy][new_imgx]["chess_piece"]]
-                        board_State[new_imgy][new_imgx]["image"] = game_Board.create_image(new_imgx*70+20, new_imgy*70+20, anchor=NW, image=img)
+                        board_State[new_imgy][new_imgx]["image"] = game_Board.create_image(new_imgx*70+30, new_imgy*70+30, anchor=NW, image=img)
                         root.focus_set()
                         ask.protocol("WM_DELETE_WINDOW", delete)
 
@@ -796,7 +796,7 @@ def coord_drop(e):
                 checkMate = check_Or_checkmate()
                 if checkMate:
                     # move_List.insert(END, "checkmate")
-                    game_Board.coords(board_State[new_imgy][new_imgx]["image"], new_imgx*70+20, new_imgy*70+20)
+                    game_Board.coords(board_State[new_imgy][new_imgx]["image"], new_imgx*70+30, new_imgy*70+30)
                     game_Board.itemconfig(board_State[new_imgy][new_imgx]["image"], anchor=NW)
                     pickup = False
                     return
@@ -805,7 +805,7 @@ def coord_drop(e):
             new_imgx = col
             new_imgy = row
         del_Move()
-        game_Board.coords(board_State[new_imgy][new_imgx]["image"], new_imgx*70+20, new_imgy*70+20)
+        game_Board.coords(board_State[new_imgy][new_imgx]["image"], new_imgx*70+30, new_imgy*70+30)
         game_Board.itemconfig(board_State[new_imgy][new_imgx]["image"], anchor=NW)
         pickup = False
 
