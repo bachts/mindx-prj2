@@ -3,28 +3,18 @@ from tkinter import *
 
 root = Tk()
 root.title("Chess")
-root.geometry("800x600")
+root.geometry("900x600")
 
-
-
-
-# menu = Menu(root)
-
-
-
-
-# frame1 = Frame(root)
-# frame1.pack(side=BOTTOM)
 
 
 
 game_Board = Canvas(root, width=600, height=600, bg="#EBE8BE")
-game_Board.pack(side=LEFT)
+game_Board.grid(row=0, column=0, rowspan=60)
 
 
 
 
-width_symbol = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+width_symbol = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 height_symbol = ['8', '7', '6', '5', '4', '3', '2', '1']
 board_Color = ["#B5E1B2", "#84B661"]
 
@@ -122,31 +112,78 @@ setup_chess_Pieces()
 
 
 
-frame1 = Frame(root)
-frame1.pack(side=RIGHT, fill=BOTH)
+move_List = []
 
-def Undo():
-    pass
-undo_Btn = Button(frame1, text="UNDO", command=Undo)
-undo_Btn.pack(side=TOP, fill=X)
+def list_Create():
 
-move_List = Message(frame1, width=200, relief=SUNKEN)
-move_List.pack(side=BOTTOM, fill=Y)
+    global move_List
+
+    for i in range(1, 7):
+        move_List.append([])
+    for i in range(1, 7, 3):
+        for j in range(27):
+            if j==0:
+                move_List[i-1].append(Label(root, text="", width=2, relief=SUNKEN))
+            else:
+                move_List[i-1].append(Label(root, text=(i==4 and 26 or 0)+j, width=2, relief=SUNKEN))
+            move_List[i-1][j].grid(row=j, column=i)
+    for i in range(2, 4):
+        for j in range(27):
+            if j==0:
+                move_List[i-1].append(Label(root, text=(i==2 and WHITE or BLACK).capitalize(), width=8, relief=SUNKEN))
+            else:
+                move_List[i-1].append(Label(root, text="", width=8, relief=SUNKEN))
+            move_List[i-1][j].grid(row=j, column=i)
+    for i in range(5, 7):
+        for j in range(27):
+            if j==0:
+                move_List[i-1].append(Label(root, text=(i==5 and WHITE or BLACK).capitalize(), width=8, relief=SUNKEN))
+            else:
+                move_List[i-1].append(Label(root, text="", width=8, relief=SUNKEN))
+            move_List[i-1][j].grid(row=j, column=i)
+
+list_Create()
+
+
+
+def alert(winner):
+
+    window = Toplevel()
+    window.title("")
+    window.attributes("-toolwindow", 1)
+    window.focus_set()
+    window.grab_set()
+
+    sentence = Label(window)
+    btn = Button(window, text="OK!", command=lambda: window.destroy())
+    if winner!="draw":
+        sentence["text"] = winner.capitalize() + " wins!"
+    else:
+        sentence["text"] = "Game draws!"
+
+    sentence.pack(side=TOP)
+    btn.pack(side=BOTTOM)
+    root.wait_window(window)
 
 
 
 
 player_Turn = WHITE
+Draw = False
+turn_Num = 1
 
 def next_Move():
 
-    global player_Turn
+    global player_Turn, turn_Num, Draw
 
     if player_Turn == WHITE:
         player_Turn = BLACK
     else:
         player_Turn = WHITE
-
+        turn_Num+=1
+        if turn_Num == 53:
+            Draw = True
+            alert("draw")
 
 
 
@@ -160,57 +197,58 @@ def find_Check():
 
     y = pieces_Pos[player_Turn]["king"][0][0]
     x = pieces_Pos[player_Turn]["king"][0][1]
+    all_check = []
 
     for i in range(y+1, 8):
         if board_State[i][x]["chess_piece"] != "":
             if board_State[i][x]["color"] != player_Turn and (board_State[i][x]["chess_piece"] == "queen" or board_State[i][x]["chess_piece"] == "rook"):
-                return (i-y, 0)
+                all_check.append((i-y, 0))
             break
 
     for i in range(y-1, -1, -1):
         if board_State[i][x]["chess_piece"] != "":
             if board_State[i][x]["color"] != player_Turn and (board_State[i][x]["chess_piece"] == "queen" or board_State[i][x]["chess_piece"] == "rook"):
-                return (i-y, 0)
+                all_check.append((i-y, 0))
             break
 
     for i in range(x+1, 8):
         if board_State[y][i]["chess_piece"] != "":
             if board_State[y][i]["color"] != player_Turn and (board_State[y][i]["chess_piece"] == "queen" or board_State[y][i]["chess_piece"] == "rook"):
-                return (0, i-x)
+                all_check.append((0, i-x))
             break
     
     for i in range(x-1, -1, -1):
         if board_State[y][i]["chess_piece"] != "":
             if board_State[y][i]["color"] != player_Turn and (board_State[y][i]["chess_piece"] == "queen" or board_State[y][i]["chess_piece"] == "rook"):
-                return (0, i-x)
+                all_check.append((0, i-x))
             break
 
     for i in range(1, min(8-x, y+1)):
         if board_State[y-i][x+i]["chess_piece"] != "":
             if board_State[y-i][x+i]["color"] != player_Turn:
                 if board_State[y-i][x+i]["chess_piece"] == "queen" or board_State[y-i][x+i]["chess_piece"] == "bishop" or (i==1 and board_State[y-i][x+i]["chess_piece"] == "pawn" and player_Turn==WHITE):
-                    return (-i, i)
+                    all_check.append((-i, i))
             break
 
     for i in range(1, min(x+1, 8-y)):
         if board_State[y+i][x-i]["chess_piece"] != "":
             if board_State[y+i][x-i]["color"] != player_Turn:
                 if board_State[y+i][x-i]["chess_piece"] == "queen" or board_State[y+i][x-i]["chess_piece"] == "bishop" or (i==1 and board_State[y+i][x-i]["chess_piece"] == "pawn" and player_Turn==BLACK):
-                    return (i, -i)
+                    all_check.append((i, -i))
             break
 
     for i in range(1, min(x+1, y+1)):
         if board_State[y-i][x-i]["chess_piece"] != "":
             if board_State[y-i][x-i]["color"] != player_Turn:
                 if board_State[y-i][x-i]["chess_piece"] == "queen" or board_State[y-i][x-i]["chess_piece"] == "bishop" or (i==1 and board_State[y-i][x-i]["chess_piece"] == "pawn" and player_Turn==WHITE):
-                    return (-i, -i)
+                    all_check.append((-i, -i))
             break
 
     for i in range(1, min(8-x, 8-y)):
         if board_State[y+i][x+i]["chess_piece"] != "":
             if board_State[y+i][x+i]["color"] != player_Turn:
                 if board_State[y+i][x+i]["chess_piece"] == "queen" or board_State[y+i][x+i]["chess_piece"] == "bishop" or (i==1 and board_State[y+i][x+i]["chess_piece"] == "pawn" and player_Turn==BLACK):
-                    return (i, i)
+                    all_check.append((i, i))
             break
 
     for i in range(8):
@@ -218,9 +256,12 @@ def find_Check():
         coordX = ((int(i/4)==0) and ((i%4>1) and 2 or -2) or ((i%2) and 1 or -1))
         if y+coordY>-1 and y+coordY<8 and x+coordX>-1 and x+coordX<8:
             if board_State[y+coordY][x+coordX]["chess_piece"] == "knight" and board_State[y+coordY][x+coordX]["color"]!=board_State[y][x]["color"]:
-                return (coordY, coordX)
+                all_check.append((coordY, coordX))
     
-    return -1
+    if len(all_check)==0:
+        return -1
+    else:
+        return all_check
 
 
 
@@ -358,10 +399,18 @@ def block_Check(y, x):
     pos = pieces_Pos[player_Turn]["king"][0]
 
     if check_Dist != -1:
+
         if board_State[y][x]["chess_piece"] == "king":
             return
 
-        elif check_Dist[0] == 0:
+        elif len(check_Dist)>1:
+            available_Move = []
+            return
+        
+        temp = check_Dist.copy()
+        check_Dist = check_Dist[0]
+
+        if check_Dist[0] == 0:
             if check_Dist[1] < 0:
                 for i in range(len(available_Move)-1, -1, -1):
                     if available_Move[i][0] != pos[0] or available_Move[i][1]-pos[1] < check_Dist[1] or available_Move[i][1] > pos[1]:
@@ -407,6 +456,8 @@ def block_Check(y, x):
 
         else:
             available_Move = []
+        
+        check_Dist = temp.copy()
 
 def commit_Suicide(y, x):
 
@@ -651,13 +702,46 @@ def disable(y, x):
     
     global board_State, player_Turn, moved_State
 
+    BoW = 0 if player_Turn==WHITE else 7
     if moved_State[(player_Turn==WHITE) and BLACK or WHITE]["0-0"]:
-        if y==((player_Turn==WHITE) and 0 or 7) and x==7:
+        if y==BoW and x==7:
             moved_State[(player_Turn==WHITE) and BLACK or WHITE]["0-0"] = False
 
     if moved_State[(player_Turn==WHITE) and BLACK or WHITE]["0-0-0"]:
-        if y==((player_Turn==WHITE) and 0 or 7) and x==0:
+        if y==BoW and x==0:
             moved_State[(player_Turn==WHITE) and BLACK or WHITE]["0-0-0"] = False
+
+
+
+
+def print_Moves(eaten, chess_piece, coord_from, coord_to, special):
+
+    global player_Turn, turn_Num
+
+    called = {
+        "pawn": "",
+        "knight": "N",
+        "rook": "R",
+        "bishop": "B",
+        "queen": "Q",
+        "king": "K"
+    }
+
+    row = turn_Num if turn_Num<=26 else turn_Num-26
+    column = (1 if player_Turn==WHITE else 2) + (0 if turn_Num<=26 else 3)
+    if special=="0-0" or special=="0-0-0":
+        move_List[column][row]["text"] = special
+    elif eaten:
+        full = ""
+        if called[chess_piece]=="":
+            full += coord_from[0]
+        else:
+            full += called[chess_piece]
+        full += "x" + coord_to + special
+        move_List[column][row]["text"] = full
+    else:
+        move_List[column][row]["text"] = called[chess_piece] + coord_to + special
+    return (row, column)
 
 
 
@@ -689,10 +773,10 @@ col, row = (0, 0)
 
 def coord_pickup(e):
 
-    global pieces_Img, player_Turn, board_State, pickup, col, row, checkMate
+    global pieces_Img, player_Turn, board_State, pickup, col, row, checkMate, Draw
 
     row, col = (int((e.y-20)/70), int((e.x-20)/70))
-    if not checkMate:
+    if (not checkMate) and (not Draw):
         if row>=0 and row<8 and col>=0 and col<8:
             if board_State[row][col]["chess_piece"]!="" and board_State[row][col]["color"]==player_Turn:
                 find_Moves(row, col)
@@ -711,14 +795,17 @@ def move(e):
 
 def coord_drop(e):
 
-    global player_Turn, board_State, available_Move, pieces_Pos, pickup, col, row, check_Dist, checkMate, moved_State, blank, pieces_Img, game_Board
+    global player_Turn, board_State, available_Move, pieces_Pos, pickup, col, row, check_Dist, checkMate, moved_State, blank, pieces_Img, move_List, width_symbol, height_symbol
 
     if pickup:
         new_imgx = int((e.x-20)/70)
         new_imgy = int((e.y-20)/70)
         if new_imgx>=0 and new_imgx<8 and new_imgy>=0 and new_imgy<8 and (new_imgx!=col or new_imgy!=row) and (new_imgy, new_imgx) in available_Move:
 
+            eaten = False
+
             if board_State[new_imgy][new_imgx]["chess_piece"] != "":
+                eaten = True
                 disable(new_imgy, new_imgx)
                 game_Board.delete(board_State[new_imgy][new_imgx]["image"])
                 pieces_Pos[board_State[new_imgy][new_imgx]["color"]][board_State[new_imgy][new_imgx]["chess_piece"]].remove((new_imgy, new_imgx))
@@ -730,6 +817,7 @@ def coord_drop(e):
                 elif board_State[row][col]["chess_piece"] == "king":
                     moved_State[player_Turn]["0-0"] = False
                     if new_imgx-col==2:
+                        special = "0-0"
                         moved_State[player_Turn]["0-0"] = False
                         BoW = (player_Turn==WHITE) and 7 or 0
                         board_State[BoW][5] = board_State[BoW][7].copy()
@@ -746,12 +834,16 @@ def coord_drop(e):
                 elif board_State[row][col]["chess_piece"] == "king":
                     moved_State[player_Turn]["0-0-0"] = False
                     if col-new_imgx==2:
+                        special = "0-0-0"
                         BoW = (player_Turn==WHITE) and 7 or 0
                         board_State[BoW][3] = board_State[BoW][0].copy()
                         board_State[BoW][0] = blank.copy()
                         pieces_Pos[player_Turn]["rook"].remove((BoW, 0))
                         pieces_Pos[player_Turn]["rook"].append((BoW, 3))
                         game_Board.coords(board_State[BoW][3]["image"], 3*70+30, BoW*70+30)
+
+            chess_piece = board_State[row][col]["chess_piece"]
+            special = ""
 
             board_State[new_imgy][new_imgx] = board_State[row][col].copy()
             board_State[row][col] = blank.copy()
@@ -761,12 +853,10 @@ def coord_drop(e):
                 if (player_Turn==WHITE and new_imgy==0) or (player_Turn==BLACK and new_imgy==7):
 
                     ask = Toplevel()
+                    ask.attributes("-toolwindow", 1)
                     ask.title("Promote to")
                     ask.focus_set()
                     ask.grab_set()
-
-                    def delete():
-                        ask.destroy()
 
                     def change(piece):
                         board_State[new_imgy][new_imgx]["chess_piece"] = piece
@@ -774,20 +864,22 @@ def coord_drop(e):
                         img = pieces_Img[board_State[new_imgy][new_imgx]["color"]][board_State[new_imgy][new_imgx]["chess_piece"]]
                         board_State[new_imgy][new_imgx]["image"] = game_Board.create_image(new_imgx*70+30, new_imgy*70+30, anchor=NW, image=img)
                         root.focus_set()
-                        ask.protocol("WM_DELETE_WINDOW", delete)
+                        ask.protocol("WM_DELETE_WINDOW", lambda: ask.destroy())
 
                     ask.protocol("WM_DELETE_WINDOW", lambda:0)
-                    rook = Button(ask, text="ROOK", command=lambda : change("rook"))
-                    knight = Button(ask, text="KNIGHT", command=lambda : change("knight"))
-                    bishop = Button(ask, text="BISHOP", command=lambda : change("bishop"))
-                    queen = Button(ask, text="QUEEN", command=lambda : change("queen"))
-                    rook.pack()
-                    knight.pack()
-                    bishop.pack()
-                    queen.pack()
+                    rook = Button(ask, image=pieces_Img[player_Turn]["rook"], command=lambda : change("rook"))
+                    knight = Button(ask, image=pieces_Img[player_Turn]["knight"], command=lambda : change("knight"))
+                    bishop = Button(ask, image=pieces_Img[player_Turn]["bishop"], command=lambda : change("bishop"))
+                    queen = Button(ask, image=pieces_Img[player_Turn]["queen"], command=lambda : change("queen"))
+                    rook.pack(side=LEFT)
+                    knight.pack(side=LEFT)
+                    bishop.pack(side=LEFT)
+                    queen.pack(side=LEFT)
                     root.wait_window(ask)
+                    special = "=R" if board_State[new_imgy][new_imgx]["chess_piece"]=="rook" else "=N" if board_State[new_imgy][new_imgx]["chess_piece"]=="knight" else "=B" if board_State[new_imgy][new_imgx]["chess_piece"]=="bishop" else "=Q"
 
             pieces_Pos[player_Turn][board_State[new_imgy][new_imgx]["chess_piece"]].append((new_imgy, new_imgx))
+            coord = print_Moves(eaten, chess_piece, width_symbol[col]+height_symbol[row], width_symbol[new_imgx]+height_symbol[new_imgy], special)
 
             next_Move()
             check_Dist = find_Check()
@@ -795,12 +887,17 @@ def coord_drop(e):
                 del_Move()
                 checkMate = check_Or_checkmate()
                 if checkMate:
-                    # move_List.insert(END, "checkmate")
+                    move_List[coord[1]][coord[0]]["text"] += "#"
                     game_Board.coords(board_State[new_imgy][new_imgx]["image"], new_imgx*70+30, new_imgy*70+30)
                     game_Board.itemconfig(board_State[new_imgy][new_imgx]["image"], anchor=NW)
                     pickup = False
+                    alert(WHITE if player_Turn==BLACK else BLACK)
                     return
-                # move_List.insert(END, "check")
+                elif len(check_Dist)==1:
+                    move_List[coord[1]][coord[0]]["text"] += "+"
+                else:
+                    move_List[coord[1]][coord[0]]["text"] += "++"
+
         else:
             new_imgx = col
             new_imgy = row
@@ -815,6 +912,79 @@ def coord_drop(e):
 game_Board.bind("<Button-1>", coord_pickup)
 game_Board.bind("<B1-Motion>", move)
 game_Board.bind("<ButtonRelease-1>", coord_drop)
+
+
+
+
+def new_Game():
+
+    window = Toplevel()
+    window.title("")
+    window.attributes("-toolwindow", 1)
+    window.focus_set()
+    window.grab_set()
+
+    sentence = Label(window, text="Do you want to reset?")
+    btn = Button(window, text="OK!", command=lambda: rewind())
+
+    def rewind():
+
+        global board_State, pieces_Pos, player_Turn, move_List, checkMate, Draw, turn_Num, check_Dist, moved_State
+
+        pieces_Pos = {
+            "white": {
+                "pawn": [],
+                "rook": [],
+                "knight": [],
+                "bishop": [],
+                "queen": [],
+                "king": []
+            },
+            "black": {
+                "pawn": [],
+                "rook": [],
+                "knight": [],
+                "bishop": [],
+                "queen": [],
+                "king": []
+            }
+        }
+        for i in range(8):
+            for j in range(8):
+                game_Board.delete(board_State[i][j]["image"])
+        board_State = []
+        setup_chess_Pieces()
+        for i in range(6):
+            for j in range(27):
+                move_List[i][j].destroy()
+        move_List = []
+        list_Create()
+        Draw = False
+        turn_Num = 1
+        player_Turn = WHITE
+        check_Dist = -1
+        moved_State = {
+            "white": {
+                "0-0": True,
+                "0-0-0": True
+            },
+            "black": {
+                "0-0": True,
+                "0-0-0": True
+            }
+        }
+        checkMate = False
+        window.destroy()
+
+    sentence.pack(side=TOP)
+    btn.pack(side=BOTTOM)
+    root.wait_window(window)
+
+
+menuBar = Menu(root)
+menuBar.add_command(label="New Game", command=lambda: new_Game())
+menuBar.add_command(label="Undo", command=lambda: 0)
+root.config(menu=menuBar)
 
 
 
