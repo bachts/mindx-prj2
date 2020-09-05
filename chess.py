@@ -71,6 +71,7 @@ pieces_Img = {
 WHITE = "white"
 BLACK = "black"
 board_State = []
+board_All_state = []
 
 def setup_chess_Pieces():
 
@@ -108,7 +109,6 @@ def setup_chess_Pieces():
                 board_State[i][j]["image"] = game_Board.create_image(30+j*70, 30+i*70, anchor=NW, image=img)
 
 setup_chess_Pieces()
-
 
 
 
@@ -795,7 +795,7 @@ def move(e):
 
 def coord_drop(e):
 
-    global player_Turn, board_State, available_Move, pieces_Pos, pickup, col, row, check_Dist, checkMate, moved_State, blank, pieces_Img, move_List, width_symbol, height_symbol
+    global player_Turn, board_State, available_Move, pieces_Pos, pickup, col, row, check_Dist, checkMate, moved_State, blank, pieces_Img, move_List, width_symbol, height_symbol, board_All_state
 
     if pickup:
         new_imgx = int((e.x-20)/70)
@@ -803,7 +803,11 @@ def coord_drop(e):
         if new_imgx>=0 and new_imgx<8 and new_imgy>=0 and new_imgy<8 and (new_imgx!=col or new_imgy!=row) and (new_imgy, new_imgx) in available_Move:
 
             eaten = False
-
+            board_Change = [{
+                "coord": (row, col), "piece": board_State[row][col]["chess_piece"], "color": board_State[row][col]["color"]
+            }, {
+                "coord": (new_imgy, new_imgx), "piece": board_State[new_imgy][new_imgx]["chess_piece"], "color": board_State[new_imgy][new_imgx]["color"]
+            }]
             if board_State[new_imgy][new_imgx]["chess_piece"] != "":
                 eaten = True
                 disable(new_imgy, new_imgx)
@@ -822,6 +826,12 @@ def coord_drop(e):
                         BoW = (player_Turn==WHITE) and 7 or 0
                         board_State[BoW][5] = board_State[BoW][7].copy()
                         board_State[BoW][7] = blank.copy()
+                        board_Change.append({
+                            "coord": (BoW, 7), "piece": "rook", "color": player_Turn
+                        })
+                        board_Change.append({
+                            "coord": (BoW, 5), "piece": "", "color": ""
+                        })
                         pieces_Pos[player_Turn]["rook"].remove((BoW, 7))
                         pieces_Pos[player_Turn]["rook"].append((BoW, 5))
                         game_Board.coords(board_State[BoW][5]["image"], 5*70+30, BoW*70+30)
@@ -838,6 +848,12 @@ def coord_drop(e):
                         BoW = (player_Turn==WHITE) and 7 or 0
                         board_State[BoW][3] = board_State[BoW][0].copy()
                         board_State[BoW][0] = blank.copy()
+                        board_Change.append({
+                            "coord": (BoW, 0), "piece": "rook", "color": player_Turn
+                        })
+                        board_Change.append({
+                            "coord": (BoW, 3), "piece": "", "color": ""
+                        })
                         pieces_Pos[player_Turn]["rook"].remove((BoW, 0))
                         pieces_Pos[player_Turn]["rook"].append((BoW, 3))
                         game_Board.coords(board_State[BoW][3]["image"], 3*70+30, BoW*70+30)
@@ -880,6 +896,7 @@ def coord_drop(e):
 
             pieces_Pos[player_Turn][board_State[new_imgy][new_imgx]["chess_piece"]].append((new_imgy, new_imgx))
             coord = print_Moves(eaten, chess_piece, width_symbol[col]+height_symbol[row], width_symbol[new_imgx]+height_symbol[new_imgy], special)
+            board_All_state.append((board_Change.copy(), coord))
 
             next_Move()
             check_Dist = find_Check()
@@ -929,7 +946,7 @@ def new_Game():
 
     def rewind():
 
-        global board_State, pieces_Pos, player_Turn, move_List, checkMate, Draw, turn_Num, check_Dist, moved_State
+        global board_State, pieces_Pos, player_Turn, move_List, checkMate, Draw, turn_Num, check_Dist, moved_State, board_All_state
 
         pieces_Pos = {
             "white": {
@@ -953,6 +970,7 @@ def new_Game():
             for j in range(8):
                 game_Board.delete(board_State[i][j]["image"])
         board_State = []
+        board_All_state = []
         setup_chess_Pieces()
         for i in range(6):
             for j in range(27):
@@ -981,9 +999,66 @@ def new_Game():
     root.wait_window(window)
 
 
+
+def Undo():
+
+    global board_State, player_Turn, turn_Num, board_All_state, move_List, pieces_Pos, checkMate, Draw, check_Dist
+
+    checkMate = False
+    Draw = False
+    if turn_Num==1 and player_Turn==WHITE:
+        return
+
+    Changes = board_All_state[len(board_All_state)-1]
+    length = len(Changes[0])
+    for i in range(length):
+        if board_State[Changes[0][i]["coord"][0]][Changes[0][i]["coord"][1]]["chess_piece"]:
+            game_Board.delete(board_State[Changes[0][i]["coord"][0]][Changes[0][i]["coord"][1]]["image"])
+        board_State[Changes[0][i]["coord"][0]][Changes[0][i]["coord"][1]] = {
+            "chess_piece": Changes[0][i]["piece"], "color": Changes[0][i]["color"], "image": ""
+        }
+        if Changes[0][i]["piece"] != "":
+            img = pieces_Img[Changes[0][i]["color"]][Changes[0][i]["piece"]]
+            board_State[Changes[0][i]["coord"][0]][Changes[0][i]["coord"][1]]["image"] = game_Board.create_image(30+Changes[0][i]["coord"][1]*70, 30+Changes[0][i]["coord"][0]*70, anchor=NW, image=img)
+    move_List[Changes[1][1]][Changes[1][0]]["text"] = ""
+    board_All_state.pop(len(board_All_state)-1)
+
+    pieces_Pos = {
+        "white": {
+            "pawn": [],
+            "rook": [],
+            "knight": [],
+            "bishop": [],
+            "queen": [],
+            "king": []
+        },
+        "black": {
+            "pawn": [],
+            "rook": [],
+            "knight": [],
+            "bishop": [],
+            "queen": [],
+            "king": []
+        }
+    }
+    for i in range(8):
+        for j in range(8):
+            if board_State[i][j]["chess_piece"]!="":
+                pieces_Pos[board_State[i][j]["color"]][board_State[i][j]["chess_piece"]].append((i, j))
+
+    if player_Turn==WHITE:
+        player_Turn = BLACK
+        turn_Num-=1
+    else:
+        player_Turn = WHITE
+    check_Dist = find_Check()
+
+
+
+
 menuBar = Menu(root)
 menuBar.add_command(label="New Game", command=lambda: new_Game())
-menuBar.add_command(label="Undo", command=lambda: 0)
+menuBar.add_command(label="Undo", command=lambda: Undo())
 root.config(menu=menuBar)
 
 
