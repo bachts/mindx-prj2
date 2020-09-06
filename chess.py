@@ -803,6 +803,7 @@ def coord_drop(e):
         if new_imgx>=0 and new_imgx<8 and new_imgy>=0 and new_imgy<8 and (new_imgx!=col or new_imgy!=row) and (new_imgy, new_imgx) in available_Move:
 
             eaten = False
+            special = ""
             board_Change = [{
                 "coord": (row, col), "piece": board_State[row][col]["chess_piece"], "color": board_State[row][col]["color"]
             }, {
@@ -859,7 +860,6 @@ def coord_drop(e):
                         game_Board.coords(board_State[BoW][3]["image"], 3*70+30, BoW*70+30)
 
             chess_piece = board_State[row][col]["chess_piece"]
-            special = ""
 
             board_State[new_imgy][new_imgx] = board_State[row][col].copy()
             board_State[row][col] = blank.copy()
@@ -972,11 +972,12 @@ def new_Game():
         board_State = []
         board_All_state = []
         setup_chess_Pieces()
-        for i in range(6):
-            for j in range(27):
-                move_List[i][j].destroy()
-        move_List = []
-        list_Create()
+        for i in range(1, 3):
+            for j in range(1, 27):
+                move_List[i][j]["text"] = ""
+        for i in range(4, 6):
+            for j in range(1, 27):
+                move_List[i][j]["text"] = ""
         Draw = False
         turn_Num = 1
         player_Turn = WHITE
