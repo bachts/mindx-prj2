@@ -31,6 +31,12 @@ board_Display()
 
 
 
+highlight_Color = ["#F5E1B2", "#F4B661"]
+box_Highlight = []
+
+
+
+
 blank = {"chess_piece": "", "color": "", "image": ""}
 pieces_Pos = {
     "white": {
@@ -72,10 +78,12 @@ WHITE = "white"
 BLACK = "black"
 board_State = []
 board_All_state = []
+player_Side = WHITE
 
 def setup_chess_Pieces():
 
-    global board_State, pieces_Pos, pieces_Img, blank
+    global board_State, pieces_Pos, pieces_Img, player_Side, blank
+
 
     for i in range(8):
         temp = [];
@@ -84,17 +92,17 @@ def setup_chess_Pieces():
         board_State.append(temp)
 
     for i in range(8):
-        board_State[1][i]["chess_piece"], board_State[1][i]["color"] = ("pawn", BLACK)
-        board_State[6][i]["chess_piece"], board_State[6][i]["color"] = ("pawn", WHITE)
-        pieces_Pos[BLACK]["pawn"].append((1, i))
-        pieces_Pos[WHITE]["pawn"].append((6, i))
+        board_State[(player_Side==WHITE and 1 or 6)][i]["chess_piece"], board_State[(player_Side==WHITE and 1 or 6)][i]["color"] = ("pawn", BLACK)
+        board_State[(player_Side==BLACK and 1 or 6)][i]["chess_piece"], board_State[(player_Side==BLACK and 1 or 6)][i]["color"] = ("pawn", WHITE)
+        pieces_Pos[BLACK]["pawn"].append(((player_Side==WHITE and 1 or 6), i))
+        pieces_Pos[WHITE]["pawn"].append(((player_Side==BLACK and 1 or 6), i))
 
-    order = ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"]
+    order = ["rook", "knight", "bishop", (player_Side==WHITE and "queen" or "king"), (player_Side==BLACK and "queen" or "king"), "bishop", "knight", "rook"]
     for i in range(8):
-        board_State[0][i]["chess_piece"], board_State[0][i]["color"] = (order[i], BLACK)
-        board_State[7][i]["chess_piece"], board_State[7][i]["color"] = (order[i], WHITE)
-        pieces_Pos[BLACK][order[i]].append((0, i))
-        pieces_Pos[WHITE][order[i]].append((7, i))
+        board_State[(0 if player_Side==WHITE else 7)][i]["chess_piece"], board_State[(0 if player_Side==WHITE else 7)][i]["color"] = (order[i], BLACK)
+        board_State[(0 if player_Side==BLACK else 7)][i]["chess_piece"], board_State[(0 if player_Side==BLACK else 7)][i]["color"] = (order[i], WHITE)
+        pieces_Pos[BLACK][order[i]].append(((0 if player_Side==WHITE else 7), i))
+        pieces_Pos[WHITE][order[i]].append(((0 if player_Side==BLACK else 7), i))
 
     ascending = ["pawn", "rook", "knight", "bishop", "queen", "king"]
     color = [BLACK, WHITE]
@@ -120,6 +128,7 @@ def list_Create():
 
     for i in range(1, 7):
         move_List.append([])
+
     for i in range(1, 7, 3):
         for j in range(27):
             if j==0:
@@ -127,6 +136,7 @@ def list_Create():
             else:
                 move_List[i-1].append(Label(root, text=(i==4 and 26 or 0)+j, width=2, relief=SUNKEN))
             move_List[i-1][j].grid(row=j, column=i)
+
     for i in range(2, 4):
         for j in range(27):
             if j==0:
@@ -134,6 +144,7 @@ def list_Create():
             else:
                 move_List[i-1].append(Label(root, text="", width=8, relief=SUNKEN))
             move_List[i-1][j].grid(row=j, column=i)
+
     for i in range(5, 7):
         for j in range(27):
             if j==0:
@@ -149,17 +160,17 @@ list_Create()
 def alert(winner):
 
     window = Toplevel()
-    window.title("")
+    window.title("GAME ENDS")
     window.attributes("-toolwindow", 1)
     window.focus_set()
     window.grab_set()
 
     sentence = Label(window)
-    btn = Button(window, text="OK!", command=lambda: window.destroy())
+    btn = Button(window, text="  OK!  ", command=lambda: window.destroy())
     if winner!="draw":
-        sentence["text"] = winner.capitalize() + " wins!"
+        sentence["text"] = "     " + winner.capitalize() + " wins!     "
     else:
-        sentence["text"] = "Game draws!"
+        sentence["text"] = "     Stalemate!     "
 
     sentence.pack(side=TOP)
     btn.pack(side=BOTTOM)
@@ -193,7 +204,7 @@ available_Show = []
 
 def find_Check():
 
-    global available_Move, board_State, player_Turn, pieces_Pos
+    global available_Move, board_State, player_Turn, pieces_Pos, player_Side
 
     y = pieces_Pos[player_Turn]["king"][0][0]
     x = pieces_Pos[player_Turn]["king"][0][1]
@@ -226,38 +237,38 @@ def find_Check():
     for i in range(1, min(8-x, y+1)):
         if board_State[y-i][x+i]["chess_piece"] != "":
             if board_State[y-i][x+i]["color"] != player_Turn:
-                if board_State[y-i][x+i]["chess_piece"] == "queen" or board_State[y-i][x+i]["chess_piece"] == "bishop" or (i==1 and board_State[y-i][x+i]["chess_piece"] == "pawn" and player_Turn==WHITE):
+                if board_State[y-i][x+i]["chess_piece"] == "queen" or board_State[y-i][x+i]["chess_piece"] == "bishop" or (i==1 and board_State[y-i][x+i]["chess_piece"] == "pawn" and player_Turn==player_Side):
                     all_check.append((-i, i))
             break
 
     for i in range(1, min(x+1, 8-y)):
         if board_State[y+i][x-i]["chess_piece"] != "":
             if board_State[y+i][x-i]["color"] != player_Turn:
-                if board_State[y+i][x-i]["chess_piece"] == "queen" or board_State[y+i][x-i]["chess_piece"] == "bishop" or (i==1 and board_State[y+i][x-i]["chess_piece"] == "pawn" and player_Turn==BLACK):
+                if board_State[y+i][x-i]["chess_piece"] == "queen" or board_State[y+i][x-i]["chess_piece"] == "bishop" or (i==1 and board_State[y+i][x-i]["chess_piece"] == "pawn" and player_Turn!=player_Side):
                     all_check.append((i, -i))
             break
 
     for i in range(1, min(x+1, y+1)):
         if board_State[y-i][x-i]["chess_piece"] != "":
             if board_State[y-i][x-i]["color"] != player_Turn:
-                if board_State[y-i][x-i]["chess_piece"] == "queen" or board_State[y-i][x-i]["chess_piece"] == "bishop" or (i==1 and board_State[y-i][x-i]["chess_piece"] == "pawn" and player_Turn==WHITE):
+                if board_State[y-i][x-i]["chess_piece"] == "queen" or board_State[y-i][x-i]["chess_piece"] == "bishop" or (i==1 and board_State[y-i][x-i]["chess_piece"] == "pawn" and player_Turn==player_Side):
                     all_check.append((-i, -i))
             break
 
     for i in range(1, min(8-x, 8-y)):
         if board_State[y+i][x+i]["chess_piece"] != "":
             if board_State[y+i][x+i]["color"] != player_Turn:
-                if board_State[y+i][x+i]["chess_piece"] == "queen" or board_State[y+i][x+i]["chess_piece"] == "bishop" or (i==1 and board_State[y+i][x+i]["chess_piece"] == "pawn" and player_Turn==BLACK):
+                if board_State[y+i][x+i]["chess_piece"] == "queen" or board_State[y+i][x+i]["chess_piece"] == "bishop" or (i==1 and board_State[y+i][x+i]["chess_piece"] == "pawn" and player_Turn!=player_Side):
                     all_check.append((i, i))
             break
 
     for i in range(8):
-        coordY = ((int(i/4)>0) and ((i%4>1) and 2 or -2) or ((i%2) and 1 or -1))
-        coordX = ((int(i/4)==0) and ((i%4>1) and 2 or -2) or ((i%2) and 1 or -1))
+        coordY = ((int(i/4)) and ((i%4>1) and 2 or -2) or ((i%2) and 1 or -1))
+        coordX = ((not int(i/4)) and ((i%4>1) and 2 or -2) or ((i%2) and 1 or -1))
         if y+coordY>-1 and y+coordY<8 and x+coordX>-1 and x+coordX<8:
             if board_State[y+coordY][x+coordX]["chess_piece"] == "knight" and board_State[y+coordY][x+coordX]["color"]!=board_State[y][x]["color"]:
                 all_check.append((coordY, coordX))
-    
+
     if len(all_check)==0:
         return -1
     else:
@@ -280,31 +291,31 @@ moved_State = {
 
 def move_Set(y, x):
 
-    global available_Move, board_State, player_Turn, pieces_Pos
+    global available_Move, board_State, player_Turn, pieces_Pos, player_Side
 
     chess_Cardinals = [(1, 0),(0, 1),(-1, 0),(0, -1)]
     chess_Diagonals = [(1, 1),(-1, 1),(1, -1),(-1, -1)]
 
     if board_State[y][x]["chess_piece"] == "pawn":
 
-        if board_State[y][x]["color"] == "black":
+        if board_State[y][x]["color"] != player_Side:
             if board_State[y+1][x]["chess_piece"] == "":
                 available_Move.append((y+1, x))
                 if y == 1 and board_State[y+2][x]["chess_piece"] == "":
                     available_Move.append((y+2, x))
-            if x<7 and board_State[y+1][x+1]["chess_piece"]!="" and board_State[y+1][x+1]["color"]=="white":
+            if x<7 and board_State[y+1][x+1]["chess_piece"]!="" and board_State[y+1][x+1]["color"] == player_Side:
                 available_Move.append((y+1, x+1))
-            if x>0 and board_State[y+1][x-1]["chess_piece"]!="" and board_State[y+1][x-1]["color"]=="white": 
+            if x>0 and board_State[y+1][x-1]["chess_piece"]!="" and board_State[y+1][x-1]["color"] == player_Side: 
                 available_Move.append((y+1, x-1))
 
-        if board_State[y][x]["color"] == "white":
+        else:                                        # board_State[y][x]["color"] == player_Side
             if board_State[y-1][x]["chess_piece"] == "":
                 available_Move.append((y-1, x))
                 if y == 6 and board_State[y-2][x]["chess_piece"] == "":
                     available_Move.append((y-2, x))
-            if x<7 and board_State[y-1][x+1]["chess_piece"]!="" and board_State[y-1][x+1]["color"] == "black":
+            if x<7 and board_State[y-1][x+1]["chess_piece"] != "" and board_State[y-1][x+1]["color"] != player_Side:
                 available_Move.append((y-1, x+1))
-            if x>0 and board_State[y-1][x-1]["chess_piece"]!="" and board_State[y-1][x-1]["color"] == "black": 
+            if x>0 and board_State[y-1][x-1]["chess_piece"] != "" and board_State[y-1][x-1]["color"] != player_Side: 
                 available_Move.append((y-1, x-1))
 
     elif board_State[y][x]["chess_piece"] == "rook":
@@ -322,12 +333,12 @@ def move_Set(y, x):
     elif board_State[y][x]["chess_piece"] == "knight":
         
         for i in range(8):
-            moveY = ((int(i/4)>0) and ((i%4>1) and 2 or -2) or ((i%2) and 1 or -1))
-            moveX = ((int(i/4)==0) and ((i%4>1) and 2 or -2) or ((i%2) and 1 or -1))
+            moveY = ((int(i/4)) and ((i%4>1) and 2 or -2) or ((i%2) and 1 or -1))
+            moveX = ((not int(i/4)) and ((i%4>1) and 2 or -2) or ((i%2) and 1 or -1))
             if y+moveY>-1 and y+moveY<8 and x+moveX>-1 and x+moveX<8:
-                if board_State[y+moveY][x+moveX]["chess_piece"]=="" or board_State[y+moveY][x+moveX]["color"]!=board_State[y][x]["color"]:
+                if board_State[y+moveY][x+moveX]["color"]!=board_State[y][x]["color"]:
                     available_Move.append((y+moveY, x+moveX))
-    
+
     elif board_State[y][x]["chess_piece"] == "bishop":
 
         for i in range(4):
@@ -361,38 +372,39 @@ def move_Set(y, x):
                 newX += moveX
             if newX+moveX>-1 and newX+moveX<8 and newY+moveY>-1 and newY+moveY<8 and board_State[newY+moveY][newX+moveX]["color"] != board_State[y][x]["color"]:
                 available_Move.append((newY+moveY, newX+moveX))
-    
+
     elif board_State[y][x]["chess_piece"] == "king":
 
         for i in range(4):
             moveY, moveX = chess_Cardinals[i]
-            if x+moveX>-1 and x+moveX<8 and y+moveY>-1 and y+moveY<8 and (board_State[y+moveY][x+moveX]["chess_piece"] == "" or board_State[y+moveY][x+moveX]["color"] != board_State[y][x]["color"]):
+            if x+moveX>-1 and x+moveX<8 and y+moveY>-1 and y+moveY<8 and board_State[y+moveY][x+moveX]["color"] != board_State[y][x]["color"]:
                 available_Move.append((y+moveY, x+moveX))
 
         for i in range(4):
             moveY, moveX = chess_Diagonals[i]
-            if x+moveX>-1 and x+moveX<8 and y+moveY>-1 and y+moveY<8 and (board_State[y+moveY][x+moveX]["chess_piece"] == "" or board_State[y+moveY][x+moveX]["color"] != board_State[y][x]["color"]):
+            if x+moveX>-1 and x+moveX<8 and y+moveY>-1 and y+moveY<8 and board_State[y+moveY][x+moveX]["color"] != board_State[y][x]["color"]:
                 available_Move.append((y+moveY, x+moveX))
 
-        if moved_State[player_Turn]["0-0"]:
-            blocked = False
-            for i in range(5, 7):
-                if board_State[y][i]["chess_piece"] != "":
-                    blocked = True
-                    break
-            if not blocked:
-                available_Move.append((y, x+2))
-        
-        if moved_State[player_Turn]["0-0-0"]:
-            blocked = False
-            for i in range(1, 4):
-                if board_State[y][i]["chess_piece"] != "":
-                    blocked = True
-                    break
-            if not blocked:
-                available_Move.append((y, x-2))
+        if find_Check() == -1:
+            if moved_State[player_Turn][("0-0" if player_Side==WHITE else "0-0-0")]:
+                blocked = False
+                for i in range((5 if player_Side==WHITE else 4), 7):
+                    if board_State[y][i]["chess_piece"] != "":
+                        blocked = True
+                        break
+                if not blocked:
+                    available_Move.append((y, x+2))
 
-def block_Check(y, x):
+            if moved_State[player_Turn][("0-0-0" if player_Side==WHITE else "0-0")]:
+                blocked = False
+                for i in range(1, (4 if player_Side==WHITE else 3)):
+                    if board_State[y][i]["chess_piece"] != "":
+                        blocked = True
+                        break
+                if not blocked:
+                    available_Move.append((y, x-2))
+
+def anti_Check(y, x):
 
     global board_State, available_Move, player_Turn, pieces_Pos, check_Dist
 
@@ -432,30 +444,33 @@ def block_Check(y, x):
                     if available_Move[i][1] != pos[1] or available_Move[i][0]-pos[0] > check_Dist[0] or available_Move[i][0] < pos[0]:
                         available_Move.pop(i)
 
-        elif check_Dist[0]*check_Dist[1] < 0:
-            if check_Dist[0] < 0:
-                for i in range(len(available_Move)-1, -1, -1):
-                    if abs(available_Move[i][0]-pos[0]) != abs(available_Move[i][1]-pos[1]) or (available_Move[i][0]-pos[0])*(available_Move[i][1]-pos[1]) >= 0 or available_Move[i][0]-pos[0] < check_Dist[0] or available_Move[i][0] > pos[0]:
-                        available_Move.pop(i)
+        elif abs(check_Dist[0]) == abs(check_Dist[1]):
+            if check_Dist[0]*check_Dist[1] < 0:
+                if check_Dist[0] < 0:
+                    for i in range(len(available_Move)-1, -1, -1):
+                        if abs(available_Move[i][0]-pos[0]) != abs(available_Move[i][1]-pos[1]) or (available_Move[i][0]-pos[0])*(available_Move[i][1]-pos[1]) >= 0 or available_Move[i][0]-pos[0] < check_Dist[0] or available_Move[i][0] > pos[0]:
+                            available_Move.pop(i)
 
-            else:
-                for i in range(len(available_Move)-1, -1, -1):
-                    if abs(available_Move[i][0]-pos[0]) != abs(available_Move[i][1]-pos[1]) or (available_Move[i][0]-pos[0])*(available_Move[i][1]-pos[1]) >= 0 or available_Move[i][0]-pos[0] > check_Dist[0] or available_Move[i][0] < pos[0]:
-                        available_Move.pop(i)
+                else:                       # check_Dist[0] > 0
+                    for i in range(len(available_Move)-1, -1, -1):
+                        if abs(available_Move[i][0]-pos[0]) != abs(available_Move[i][1]-pos[1]) or (available_Move[i][0]-pos[0])*(available_Move[i][1]-pos[1]) >= 0 or available_Move[i][0]-pos[0] > check_Dist[0] or available_Move[i][0] < pos[0]:
+                            available_Move.pop(i)
 
-        elif check_Dist[0]*check_Dist[1] > 0:
-            if check_Dist[0] < 0:
-                for i in range(len(available_Move)-1, -1, -1):
-                    if abs(available_Move[i][0]-pos[0]) != abs(available_Move[i][1]-pos[1]) or (available_Move[i][0]-pos[0])*(available_Move[i][1]-pos[1]) <= 0 or available_Move[i][0]-pos[0] < check_Dist[0] or available_Move[i][0] > pos[0]:
-                        available_Move.pop(i)
+            else:                           # check_Dist[0]*check_Dist[1] > 0
+                if check_Dist[0] < 0:
+                    for i in range(len(available_Move)-1, -1, -1):
+                        if abs(available_Move[i][0]-pos[0]) != abs(available_Move[i][1]-pos[1]) or (available_Move[i][0]-pos[0])*(available_Move[i][1]-pos[1]) <= 0 or available_Move[i][0]-pos[0] < check_Dist[0] or available_Move[i][0] > pos[0]:
+                            available_Move.pop(i)
 
-            else:
-                for i in range(len(available_Move)-1, -1, -1):
-                    if abs(available_Move[i][0]-pos[0]) != abs(available_Move[i][1]-pos[1]) or (available_Move[i][0]-pos[0])*(available_Move[i][1]-pos[1]) <= 0 or available_Move[i][0]-pos[0] > check_Dist[0] or available_Move[i][0] < pos[0]:
-                        available_Move.pop(i)
+                else:
+                    for i in range(len(available_Move)-1, -1, -1):
+                        if abs(available_Move[i][0]-pos[0]) != abs(available_Move[i][1]-pos[1]) or (available_Move[i][0]-pos[0])*(available_Move[i][1]-pos[1]) <= 0 or available_Move[i][0]-pos[0] > check_Dist[0] or available_Move[i][0] < pos[0]:
+                            available_Move.pop(i)
 
         else:
-            available_Move = []
+            for i in range(len(available_Move)-1, -1, -1):
+                if available_Move[i][0] != pos[0]+check_Dist[0] or available_Move[i][1] != pos[1]+check_Dist[1]:
+                    available_Move.pop(i)
         
         check_Dist = temp.copy()
 
@@ -474,54 +489,36 @@ def commit_Suicide(y, x):
             move = available_Move[i]
             temp = blank.copy()
             pos = pieces_Pos[player_Turn]["king"][0]
-            BoW = (player_Turn==WHITE) and 7 or 0
 
             if abs(move[1]-x)==2:
 
-                board_State[move[0]][move[1]] = board_State[pos[0]][pos[1]].copy()
+                board_State[move[0]][move[1]-int((move[1]-x)/2)] = board_State[pos[0]][pos[1]].copy()
                 board_State[pos[0]][pos[1]] = blank.copy()
 
-                if move[1]-x==2:
+                pieces_Pos[player_Turn]["king"][0] = (move[0], move[1]-int((move[1]-x)/2))
 
-                    board_State[BoW][5] = board_State[BoW][7].copy()
-                    board_State[BoW][7] = blank.copy()
+                coord_Check = find_Check()
+
+                if coord_Check == -1:
+
+                    board_State[move[0]][move[1]] = board_State[move[0]][move[1]-int((move[1]-x)/2)].copy()
+                    board_State[move[0]][move[1]-int((move[1]-x)/2)] = blank.copy()
 
                     pieces_Pos[player_Turn]["king"][0] = move
-                    pieces_Pos[player_Turn]["rook"].remove((BoW, 7))
-                    pieces_Pos[player_Turn]["rook"].append((BoW, 5))
 
                     coord_Check = find_Check()
 
                     pieces_Pos[player_Turn]["king"][0] = pos
-                    pieces_Pos[player_Turn]["rook"].remove((BoW, 5))
-                    pieces_Pos[player_Turn]["rook"].append((BoW, 7))
 
                     board_State[pos[0]][pos[1]] = board_State[move[0]][move[1]].copy()
                     board_State[move[0]][move[1]] = blank.copy()
-
-                    board_State[BoW][7] = board_State[BoW][5].copy()
-                    board_State[BoW][5] = blank.copy()
 
                 else:
 
-                    board_State[BoW][3] = board_State[BoW][0].copy()
-                    board_State[BoW][0] = blank.copy()
-
-                    pieces_Pos[player_Turn]["king"][0] = move
-                    pieces_Pos[player_Turn]["rook"].remove((BoW, 0))
-                    pieces_Pos[player_Turn]["rook"].append((BoW, 3))
-
-                    coord_Check = find_Check()
-
                     pieces_Pos[player_Turn]["king"][0] = pos
-                    pieces_Pos[player_Turn]["rook"].remove((BoW, 3))
-                    pieces_Pos[player_Turn]["rook"].append((BoW, 0))
 
-                    board_State[pos[0]][pos[1]] = board_State[move[0]][move[1]].copy()
-                    board_State[move[0]][move[1]] = blank.copy()
-
-                    board_State[BoW][0] = board_State[BoW][3].copy()
-                    board_State[BoW][3] = blank.copy()
+                    board_State[pos[0]][pos[1]] = board_State[move[0]][move[1]-int((move[1]-x)/2)].copy()
+                    board_State[move[0]][move[1]-int((move[1]-x)/2)] = blank.copy()
 
             else:
 
@@ -533,7 +530,9 @@ def commit_Suicide(y, x):
                 board_State[pos[0]][pos[1]] = blank.copy()
 
                 pieces_Pos[player_Turn]["king"][0] = move
+
                 coord_Check = find_Check()
+
                 pieces_Pos[player_Turn]["king"][0] = pos
 
                 board_State[pos[0]][pos[1]] = board_State[move[0]][move[1]].copy()
@@ -670,7 +669,7 @@ def commit_Suicide(y, x):
 def find_Moves(y, x):
 
     move_Set(y, x)
-    block_Check(y, x)
+    anti_Check(y, x)
     commit_Suicide(y, x)
 
 
@@ -700,9 +699,9 @@ def check_Or_checkmate():
 
 def disable(y, x):
     
-    global board_State, player_Turn, moved_State
+    global board_State, player_Turn, moved_State, player_Side
 
-    BoW = 0 if player_Turn==WHITE else 7
+    BoW = 0 if player_Turn==player_Side else 7
     if moved_State[(player_Turn==WHITE) and BLACK or WHITE]["0-0"]:
         if y==BoW and x==7:
             moved_State[(player_Turn==WHITE) and BLACK or WHITE]["0-0"] = False
@@ -795,7 +794,7 @@ def move(e):
 
 def coord_drop(e):
 
-    global player_Turn, board_State, available_Move, pieces_Pos, pickup, col, row, check_Dist, checkMate, moved_State, blank, pieces_Img, move_List, width_symbol, height_symbol, board_All_state
+    global player_Turn, board_State, available_Move, pieces_Pos, pickup, col, row, check_Dist, checkMate, moved_State, blank, pieces_Img, move_List, width_symbol, height_symbol, board_All_state, box_Highlight, highlight_Color
 
     if pickup:
         new_imgx = int((e.x-20)/70)
@@ -805,10 +804,18 @@ def coord_drop(e):
             eaten = False
             special = ""
             board_Change = [{
-                "coord": (row, col), "piece": board_State[row][col]["chess_piece"], "color": board_State[row][col]["color"]
+                "coord": (row, col), "piece": board_State[row][col]["chess_piece"], "color": board_State[row][col]["color"], "castle": { BLACK: moved_State[BLACK].copy(), WHITE: moved_State[WHITE].copy()}
             }, {
-                "coord": (new_imgy, new_imgx), "piece": board_State[new_imgy][new_imgx]["chess_piece"], "color": board_State[new_imgy][new_imgx]["color"]
+                "coord": (new_imgy, new_imgx), "piece": board_State[new_imgy][new_imgx]["chess_piece"], "color": board_State[new_imgy][new_imgx]["color"], "castle": { BLACK: moved_State[BLACK].copy(), WHITE: moved_State[WHITE].copy()}
             }]
+
+            while len(box_Highlight)>0:
+                game_Board.delete(box_Highlight[len(box_Highlight)-1])
+                box_Highlight.pop(len(box_Highlight)-1)
+
+            box_Highlight.append(game_Board.create_rectangle(20+col*70, 20+row*70, 20+(col+1)*70, 20+(row+1)*70, fill=((col*8+row-col)%2==0) and highlight_Color[0] or highlight_Color[1], outline=""))
+            box_Highlight.append(game_Board.create_rectangle(20+new_imgx*70, 20+new_imgy*70, 20+(new_imgx+1)*70, 20+(new_imgy+1)*70, fill=((new_imgx*8+new_imgy-new_imgx)%2==0) and highlight_Color[0] or highlight_Color[1], outline=""))
+
             if board_State[new_imgy][new_imgx]["chess_piece"] != "":
                 eaten = True
                 disable(new_imgy, new_imgx)
@@ -816,57 +823,76 @@ def coord_drop(e):
                 pieces_Pos[board_State[new_imgy][new_imgx]["color"]][board_State[new_imgy][new_imgx]["chess_piece"]].remove((new_imgy, new_imgx))
 
             if moved_State[player_Turn]["0-0"]:
-                if board_State[row][col]["chess_piece"] == "rook" and col==7:
+
+                rook_Side = (player_Side==WHITE) and 7 or 0
+
+                if board_State[row][col]["chess_piece"] == "rook" and col==rook_Side:
                     moved_State[player_Turn]["0-0"] = False
 
                 elif board_State[row][col]["chess_piece"] == "king":
-                    moved_State[player_Turn]["0-0"] = False
-                    if new_imgx-col==2:
+                    if (new_imgx-col==2 and player_Side==WHITE) or (new_imgx-col==-2 and player_Side==BLACK):
                         special = "0-0"
-                        moved_State[player_Turn]["0-0"] = False
-                        BoW = (player_Turn==WHITE) and 7 or 0
-                        board_State[BoW][5] = board_State[BoW][7].copy()
-                        board_State[BoW][7] = blank.copy()
+                        BoW = (player_Turn==player_Side) and 7 or 0
+                        new_rook_Side = new_imgx - int((new_imgx-col)/abs(new_imgx-col))
+                        box_Highlight.append(game_Board.create_rectangle(20+rook_Side*70, 20+BoW*70, 20+(rook_Side+1)*70, 20+(BoW+1)*70, fill=((rook_Side*8+BoW-rook_Side)%2==0) and highlight_Color[0] or highlight_Color[1], outline=""))
+                        box_Highlight.append(game_Board.create_rectangle(20+new_rook_Side*70, 20+BoW*70, 20+(new_rook_Side+1)*70, 20+(BoW+1)*70, fill=((new_rook_Side*8+BoW-new_rook_Side)%2==0) and highlight_Color[0] or highlight_Color[1], outline=""))
+                        game_Board.delete(board_State[BoW][rook_Side]["image"])
+                        img = pieces_Img[board_State[BoW][rook_Side]["color"]][board_State[BoW][rook_Side]["chess_piece"]]
+                        board_State[BoW][rook_Side]["image"] = game_Board.create_image(rook_Side*70+30, BoW*70+30, anchor=NW, image=img)
+                        board_State[BoW][new_rook_Side] = board_State[BoW][rook_Side].copy()
+                        board_State[BoW][rook_Side] = blank.copy()
                         board_Change.append({
-                            "coord": (BoW, 7), "piece": "rook", "color": player_Turn
+                            "coord": (BoW, rook_Side), "piece": "rook", "color": player_Turn, "castle": { BLACK: moved_State[BLACK].copy(), WHITE: moved_State[WHITE].copy()}
                         })
                         board_Change.append({
-                            "coord": (BoW, 5), "piece": "", "color": ""
+                            "coord": (BoW, new_rook_Side), "piece": "", "color": "", "castle": { BLACK: moved_State[BLACK].copy(), WHITE: moved_State[WHITE].copy()}
                         })
-                        pieces_Pos[player_Turn]["rook"].remove((BoW, 7))
-                        pieces_Pos[player_Turn]["rook"].append((BoW, 5))
-                        game_Board.coords(board_State[BoW][5]["image"], 5*70+30, BoW*70+30)
+                        pieces_Pos[player_Turn]["rook"].remove((BoW, rook_Side))
+                        pieces_Pos[player_Turn]["rook"].append((BoW, new_rook_Side))
+                        game_Board.coords(board_State[BoW][new_rook_Side]["image"], new_rook_Side*70+30, BoW*70+30)
+                    moved_State[player_Turn]["0-0"] = False
 
             if moved_State[player_Turn]["0-0-0"]:
 
-                if board_State[row][col]["chess_piece"] == "rook" and col==0:
+                rook_Side = (player_Side==BLACK) and 7 or 0
+
+                if board_State[row][col]["chess_piece"] == "rook" and col==rook_Side:
                     moved_State[player_Turn]["0-0-0"] = False
 
                 elif board_State[row][col]["chess_piece"] == "king":
-                    moved_State[player_Turn]["0-0-0"] = False
-                    if col-new_imgx==2:
+                    if (new_imgx-col==2 and player_Side==BLACK) or (new_imgx-col==-2 and player_Side==WHITE):
                         special = "0-0-0"
-                        BoW = (player_Turn==WHITE) and 7 or 0
-                        board_State[BoW][3] = board_State[BoW][0].copy()
-                        board_State[BoW][0] = blank.copy()
+                        BoW = (player_Turn==player_Side) and 7 or 0
+                        new_rook_Side = new_imgx - int((new_imgx-col)/abs(new_imgx-col))
+                        box_Highlight.append(game_Board.create_rectangle(20+rook_Side*70, 20+BoW*70, 20+(rook_Side+1)*70, 20+(BoW+1)*70, fill=((rook_Side*8+BoW-rook_Side)%2==0) and highlight_Color[0] or highlight_Color[1], outline=""))
+                        box_Highlight.append(game_Board.create_rectangle(20+new_rook_Side*70, 20+BoW*70, 20+(new_rook_Side+1)*70, 20+(BoW+1)*70, fill=((new_rook_Side*8+BoW-new_rook_Side)%2==0) and highlight_Color[0] or highlight_Color[1], outline=""))
+                        game_Board.delete(board_State[BoW][rook_Side]["image"])
+                        img = pieces_Img[board_State[BoW][rook_Side]["color"]][board_State[BoW][rook_Side]["chess_piece"]]
+                        board_State[BoW][rook_Side]["image"] = game_Board.create_image(rook_Side*70+30, BoW*70+30, anchor=NW, image=img)
+                        board_State[BoW][new_rook_Side] = board_State[BoW][rook_Side].copy()
+                        board_State[BoW][rook_Side] = blank.copy()
                         board_Change.append({
-                            "coord": (BoW, 0), "piece": "rook", "color": player_Turn
+                            "coord": (BoW, rook_Side), "piece": "rook", "color": player_Turn, "castle": { BLACK: moved_State[BLACK].copy(), WHITE: moved_State[WHITE].copy()}
                         })
                         board_Change.append({
-                            "coord": (BoW, 3), "piece": "", "color": ""
+                            "coord": (BoW, new_rook_Side), "piece": "", "color": "", "castle": { BLACK: moved_State[BLACK].copy(), WHITE: moved_State[WHITE].copy()}
                         })
-                        pieces_Pos[player_Turn]["rook"].remove((BoW, 0))
-                        pieces_Pos[player_Turn]["rook"].append((BoW, 3))
-                        game_Board.coords(board_State[BoW][3]["image"], 3*70+30, BoW*70+30)
+                        pieces_Pos[player_Turn]["rook"].remove((BoW, rook_Side))
+                        pieces_Pos[player_Turn]["rook"].append((BoW, new_rook_Side))
+                        game_Board.coords(board_State[BoW][new_rook_Side]["image"], new_rook_Side*70+30, BoW*70+30)
+                    moved_State[player_Turn]["0-0-0"] = False
 
             chess_piece = board_State[row][col]["chess_piece"]
 
+            game_Board.delete(board_State[row][col]["image"])
+            img = pieces_Img[board_State[row][col]["color"]][board_State[row][col]["chess_piece"]]
+            board_State[row][col]["image"] = game_Board.create_image(row*70+30, col*70+30, anchor=NW, image=img)
             board_State[new_imgy][new_imgx] = board_State[row][col].copy()
             board_State[row][col] = blank.copy()
             pieces_Pos[player_Turn][board_State[new_imgy][new_imgx]["chess_piece"]].remove((row, col))
 
             if board_State[new_imgy][new_imgx]["chess_piece"] == "pawn":
-                if (player_Turn==WHITE and new_imgy==0) or (player_Turn==BLACK and new_imgy==7):
+                if (player_Turn==player_Side and new_imgy==0) or (player_Turn!=player_Side and new_imgy==7):
 
                     ask = Toplevel()
                     ask.attributes("-toolwindow", 1)
@@ -915,6 +941,17 @@ def coord_drop(e):
                 else:
                     move_List[coord[1]][coord[0]]["text"] += "++"
 
+            else:
+                del_Move()
+                staleMate = check_Or_checkmate()
+                if staleMate:
+                    game_Board.coords(board_State[new_imgy][new_imgx]["image"], new_imgx*70+30, new_imgy*70+30)
+                    game_Board.itemconfig(board_State[new_imgy][new_imgx]["image"], anchor=NW)
+                    pickup = False
+                    Draw = True
+                    alert("draw")
+                    return
+
         else:
             new_imgx = col
             new_imgy = row
@@ -941,13 +978,15 @@ def new_Game():
     window.focus_set()
     window.grab_set()
 
-    sentence = Label(window, text="Do you want to reset?")
-    btn = Button(window, text="OK!", command=lambda: rewind())
+    sentence = Label(window, text="Which color you want to reset to?")
+    White_btn = Button(window, text="White", command=lambda: rewind(WHITE))
+    Black_btn = Button(window, text="Black", command=lambda: rewind(BLACK))
 
-    def rewind():
+    def rewind(color):
 
-        global board_State, pieces_Pos, player_Turn, move_List, checkMate, Draw, turn_Num, check_Dist, moved_State, board_All_state
+        global board_State, pieces_Pos, player_Turn, move_List, checkMate, Draw, turn_Num, check_Dist, moved_State, board_All_state, player_Side
 
+        player_Side = color
         pieces_Pos = {
             "white": {
                 "pawn": [],
@@ -971,6 +1010,9 @@ def new_Game():
                 game_Board.delete(board_State[i][j]["image"])
         board_State = []
         board_All_state = []
+        while len(box_Highlight)>0:
+            game_Board.delete(box_Highlight[len(box_Highlight)-1])
+            box_Highlight.pop(len(box_Highlight)-1)
         setup_chess_Pieces()
         for i in range(1, 3):
             for j in range(1, 27):
@@ -996,14 +1038,15 @@ def new_Game():
         window.destroy()
 
     sentence.pack(side=TOP)
-    btn.pack(side=BOTTOM)
+    Black_btn.pack(side=BOTTOM)
+    White_btn.pack(side=BOTTOM)
     root.wait_window(window)
 
 
 
 def Undo():
 
-    global board_State, player_Turn, turn_Num, board_All_state, move_List, pieces_Pos, checkMate, Draw, check_Dist
+    global board_State, player_Turn, turn_Num, board_All_state, move_List, pieces_Pos, checkMate, Draw, check_Dist, moved_State, box_Highlight, highlight_Color
 
     checkMate = False
     Draw = False
@@ -1013,14 +1056,18 @@ def Undo():
     Changes = board_All_state[len(board_All_state)-1]
     length = len(Changes[0])
     for i in range(length):
-        if board_State[Changes[0][i]["coord"][0]][Changes[0][i]["coord"][1]]["chess_piece"]:
-            game_Board.delete(board_State[Changes[0][i]["coord"][0]][Changes[0][i]["coord"][1]]["image"])
-        board_State[Changes[0][i]["coord"][0]][Changes[0][i]["coord"][1]] = {
+        y, x = Changes[0][i]["coord"]
+        if board_State[y][x]["chess_piece"]:
+            game_Board.delete(board_State[y][x]["image"])
+        board_State[y][x] = {
             "chess_piece": Changes[0][i]["piece"], "color": Changes[0][i]["color"], "image": ""
         }
         if Changes[0][i]["piece"] != "":
             img = pieces_Img[Changes[0][i]["color"]][Changes[0][i]["piece"]]
-            board_State[Changes[0][i]["coord"][0]][Changes[0][i]["coord"][1]]["image"] = game_Board.create_image(30+Changes[0][i]["coord"][1]*70, 30+Changes[0][i]["coord"][0]*70, anchor=NW, image=img)
+            board_State[y][x]["image"] = game_Board.create_image(30+x*70, 30+y*70, anchor=NW, image=img)
+    while len(box_Highlight)>0:
+        game_Board.delete(box_Highlight[len(box_Highlight)-1])
+        box_Highlight.pop(len(box_Highlight)-1)
     move_List[Changes[1][1]][Changes[1][0]]["text"] = ""
     board_All_state.pop(len(board_All_state)-1)
 
@@ -1052,6 +1099,18 @@ def Undo():
         turn_Num-=1
     else:
         player_Turn = WHITE
+
+    Changes = board_All_state[len(board_All_state)-1]
+    length = len(Changes[0])
+    moved_State[player_Turn] = Changes[0][0]["castle"][player_Turn].copy()
+    for i in range(length):
+        y, x = Changes[0][i]["coord"]
+        box_Highlight.append(game_Board.create_rectangle(20+x*70, 20+y*70, 20+(x+1)*70, 20+(y+1)*70, fill=((x*8+y-x)%2==0) and highlight_Color[0] or highlight_Color[1], outline=""))
+        if board_State[y][x]["chess_piece"]:
+            game_Board.delete(board_State[y][x]["image"])
+            img = pieces_Img[board_State[y][x]["color"]][board_State[y][x]["chess_piece"]]
+            board_State[y][x]["image"] = game_Board.create_image(30+x*70, 30+y*70, anchor=NW, image=img)
+
     check_Dist = find_Check()
 
 
